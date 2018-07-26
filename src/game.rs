@@ -2,6 +2,8 @@ use models;
 use game_modes;
 use montecarlo;
 
+use std::slice::Iter;
+
 pub struct Game {
     pub game_board: models::ConnectFourBoard,
     pub game_mode: game_modes::Modalities, 
