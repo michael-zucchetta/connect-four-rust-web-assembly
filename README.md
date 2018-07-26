@@ -5,7 +5,7 @@
 
 
 
-## INSTALL
+## Getting Started
 
 Need the following steps for setting up the environment:
 
