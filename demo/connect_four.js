@@ -25,7 +25,7 @@ if( typeof Rust === "undefined" ) {
             var wasm_instance = new WebAssembly.Instance( mod, instance.imports );
             return instance.initialize( wasm_instance );
         } else {
-            return fetch( "connect_four.wasm", {credentials: "same-origin"} )
+            return fetch( "demo/connect_four.wasm", {credentials: "same-origin"} )
                 .then( function( response ) { return response.arrayBuffer(); } )
                 .then( function( bytes ) { return WebAssembly.compile( bytes ); } )
                 .then( function( mod ) { return WebAssembly.instantiate( mod, instance.imports ) } )
