@@ -4,7 +4,7 @@
 
 A screenshot of the game:
 
-![alt tag](https://github.com/michael-zucchetta/blob/master/demo/ingame-screen.png?raw=true)
+![alt tag](https://github.com/michael-zucchetta/connect-four-rust-web-assembly/blob/master/demo/ingame-screen.png?raw=true)
 
 ## Intro
 
