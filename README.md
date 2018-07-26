@@ -1,12 +1,16 @@
 # Connect Four with Rust and Web Assembly
 
+## Demo
+
+
+
+
 ## INSTALL
 
-`curl https://sh.rustup.rs -sSf | sh  -s -- --channel=nightly`
-`cargo install cargo-web`
+Need the following steps for setting up the environment:
 
-`rustup install nightly`
-`rustup target add wasm32-unknown-emscripten`
-
-
-`rustup default nightly`
+* `curl https://sh.rustup.rs -sSf | sh  -s -- --channel=nightly`
+* `cargo install cargo-web`
+* `rustup install nightly`
+* `rustup target add wasm32-unknown-emscripten`
+* `rustup default nightly`
