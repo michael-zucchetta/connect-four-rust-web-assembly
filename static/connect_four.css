@@ -1,0 +1,11 @@
+canvas {
+  outline: none;
+}
+
+#canvas-container {
+  outline: none;
+}
+
+#canvas-container canvas {
+  cursor: pointer;
+}
