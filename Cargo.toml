@@ -1,0 +1,13 @@
+[package]
+name = "connect_four"
+version = "0.1.0"
+authors = ["Michael Zucchetta <michael.zucchetta@gmail.com>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rand = { version = "0.5.4", features = ["stdweb"] }
+ansi_term = "0.11"
+stdweb = "0.4.8"
+yew = "0.4.0"
