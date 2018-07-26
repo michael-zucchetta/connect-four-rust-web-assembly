@@ -14,3 +14,7 @@ Need the following steps for setting up the environment:
 * `rustup install nightly`
 * `rustup target add wasm32-unknown-emscripten`
 * `rustup default nightly`
+
+And then run:
+
+`cargo-web start`
