@@ -1,5 +1,4 @@
-use models;
-
+use crate::models;
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum Modalities {
@@ -19,15 +18,15 @@ pub enum AILevel {
 }
 
 pub fn ai_level_from_str(s: &str) -> Option<AILevel> {
-	match s {
-		"VeryEasy" => Some(AILevel::VeryEasy),
-		"Easy" => Some(AILevel::Easy),
-		"Medium" => Some(AILevel::Medium),
-		"Hard" => Some(AILevel::Hard),
-		"VeryHard" => Some(AILevel::VeryHard),
-		"Extreme" => Some(AILevel::Extreme),
-		_ => None,
-	}
+    match s {
+        "VeryEasy" => Some(AILevel::VeryEasy),
+        "Easy" => Some(AILevel::Easy),
+        "Medium" => Some(AILevel::Medium),
+        "Hard" => Some(AILevel::Hard),
+        "VeryHard" => Some(AILevel::VeryHard),
+        "Extreme" => Some(AILevel::Extreme),
+        _ => None,
+    }
 }
 
 pub fn ai_moves(ai_level: AILevel) -> usize {
@@ -45,10 +44,16 @@ pub fn get_opposite_from_turn(player: models::Player, modality: Modalities) -> m
     match player {
         models::Player::Player1 | models::Player::AIPlayer1 => models::Player::AIPlayer2,
         models::Player::Player2 => models::Player::AIPlayer1,
-        models::Player::AIPlayer2 if modality == Modalities::HumanVsComputer => models::Player::Player1,
-        models::Player::AIPlayer2 if modality == Modalities::ComputerVsComputer => models::Player::AIPlayer1,
-        models::Player::AIPlayer2 if modality == Modalities::ComputerVsHuman => models::Player::Player1,
+        models::Player::AIPlayer2 if modality == Modalities::HumanVsComputer => {
+            models::Player::Player1
+        }
+        models::Player::AIPlayer2 if modality == Modalities::ComputerVsComputer => {
+            models::Player::AIPlayer1
+        }
+        models::Player::AIPlayer2 if modality == Modalities::ComputerVsHuman => {
+            models::Player::Player1
+        }
         // ??? needed to compile
-        _ => models::Player::AIPlayer2
+        _ => models::Player::AIPlayer2,
     }
 }
