@@ -6,12 +6,14 @@
     <link href="demo/connect_four.css" rel="stylesheet"/>
     <link id="theme-bundle" href="demo/connect_four.white.css" rel="stylesheet"/>
     <script type="module">
-      import init, { create_game } from './pkg/connect_four.js';
+      import init, { create_game } from './demo/connect_four.js';
 
       const themeBundles = {
         white: 'demo/connect_four.white.css',
         terminal: 'demo/connect_four.terminal.css',
       };
+
+      const showThemeSelector = new URLSearchParams(window.location.search).get('showThemeSelector') === 'true';
 
       function setTheme(theme) {
         const selectedTheme = themeBundles[theme] ? theme : 'white';
@@ -45,7 +47,11 @@
 
       window.onload = async () => {
         const requestedTheme = new URLSearchParams(window.location.search).get('theme');
-        setTheme(requestedTheme || localStorage.getItem('connect-four-theme') || 'white');
+        const productionTheme = document.body.dataset.productionTheme;
+        setTheme(requestedTheme || localStorage.getItem('connect-four-theme') || productionTheme || 'white');
+        if (showThemeSelector) {
+          document.getElementById('theme-field').hidden = false;
+        }
         await init();
         initializeColumnHeights( document.getElementsByName('numberOfColumns')[0].value );
         window.initializeGame = () => {
@@ -72,7 +78,7 @@
       }
     </script>
   </head>
-  <body>
+  <body data-production-theme="white">
     <main class="terminal-window">
       <div class="terminal-bar" aria-hidden="true">
         <span>user@connect-four:/wasm/game</span>
@@ -86,7 +92,7 @@
           </div>
 
           <form onsubmit="event.preventDefault()" class="setup-form">
-            <label class="field">
+            <label id="theme-field" class="field" hidden>
               <span>bundle</span>
               <select name="theme" onchange="setTheme(this.value)">
                 <option value="white">White README</option>
