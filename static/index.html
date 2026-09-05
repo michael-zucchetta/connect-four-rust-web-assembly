@@ -39,7 +39,7 @@
   <body>
     <div>
       <h4>Connect Four Game</h4>
-      <form action="POST" onsubmit="return initializeGame()">
+      <form onsubmit="event.preventDefault()">
       <div> AI Level: 
         <select name="difficulty">
           <option value="VeryEasy">Very Easy</option>
@@ -60,7 +60,7 @@
         </div>
       </div>
       <div>
-        Start game: <input id="submit" type="submit" value="Ok"/>
+        Start game: <input id="submit" type="button" onclick="initializeGame()" value="Ok"/>
       </div>
       </form>
     </div>

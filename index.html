@@ -61,6 +61,14 @@
           document.body.classList.add('game-started');
           return false;
         };
+
+        window.resetGame = () => {
+          document.getElementById('game-area').innerHTML = '';
+          document.getElementById('submit').disabled = false;
+          document.getElementById('reset').hidden = true;
+          document.getElementById('game-status').textContent = 'Ready';
+          document.body.classList.remove('game-started');
+        };
       }
     </script>
   </head>
@@ -77,7 +85,7 @@
             <p><span class="prompt">$</span> cargo run --release --target wasm32</p>
           </div>
 
-          <form action="POST" onsubmit="return initializeGame()" class="setup-form">
+          <form onsubmit="event.preventDefault()" class="setup-form">
             <label class="field">
               <span>bundle</span>
               <select name="theme" onchange="setTheme(this.value)">
@@ -111,8 +119,8 @@
             </div>
 
             <div class="actions">
-              <button id="submit" type="submit">./start</button>
-              <button id="reset" type="button" hidden onclick="window.location.reload()">reset</button>
+              <button id="submit" type="button" onclick="initializeGame()">./start</button>
+              <button id="reset" type="button" hidden onclick="resetGame()">reset</button>
             </div>
           </form>
         </section>
