@@ -1,643 +1,615 @@
-"use strict";
+/* @ts-self-types="./connect_four.d.ts" */
 
-if( typeof Rust === "undefined" ) {
-    var Rust = {};
+/**
+ * @param {Uint32Array} column_sizes
+ * @param {string} game_mode
+ */
+export function create_game(column_sizes, game_mode) {
+    const ptr0 = passArray32ToWasm0(column_sizes, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(game_mode, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    wasm.create_game(ptr0, len0, ptr1, len1);
 }
-
-(function( root, factory ) {
-    if( typeof define === "function" && define.amd ) {
-        define( [], factory );
-    } else if( typeof module === "object" && module.exports ) {
-        module.exports = factory();
-    } else {
-        Rust.connect_four = factory();
-    }
-}( this, function() {
-    return (function( module_factory ) {
-        var instance = module_factory();
-
-        if( typeof window === "undefined" && typeof process === "object" ) {
-            var fs = require( "fs" );
-            var path = require( "path" );
-            var wasm_path = path.join( __dirname, "demo/connect_four.wasm" );
-            var buffer = fs.readFileSync( wasm_path );
-            var mod = new WebAssembly.Module( buffer );
-            var wasm_instance = new WebAssembly.Instance( mod, instance.imports );
-            return instance.initialize( wasm_instance );
-        } else {
-            return fetch( "demo/connect_four.wasm", {credentials: "same-origin"} )
-                .then( function( response ) { return response.arrayBuffer(); } )
-                .then( function( bytes ) { return WebAssembly.compile( bytes ); } )
-                .then( function( mod ) { return WebAssembly.instantiate( mod, instance.imports ) } )
-                .then( function( wasm_instance ) {
-                    var exports = instance.initialize( wasm_instance );
-                    console.log( "Finished loading Rust wasm module 'connect_four'" );
-                    return exports;
-                })
-                .catch( function( error ) {
-                    console.log( "Error loading Rust wasm module 'connect_four':", error );
-                    throw error;
-                });
-        }
-    }( function() {
-    var Module = {};
-
-    Module.STDWEB_PRIVATE = {};
-
-// This is based on code from Emscripten's preamble.js.
-Module.STDWEB_PRIVATE.to_utf8 = function to_utf8( str, addr ) {
-    for( var i = 0; i < str.length; ++i ) {
-        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code unit, not a Unicode code point of the character! So decode UTF16->UTF32->UTF8.
-        // See http://unicode.org/faq/utf_bom.html#utf16-3
-        // For UTF8 byte structure, see http://en.wikipedia.org/wiki/UTF-8#Description and https://www.ietf.org/rfc/rfc2279.txt and https://tools.ietf.org/html/rfc3629
-        var u = str.charCodeAt( i ); // possibly a lead surrogate
-        if( u >= 0xD800 && u <= 0xDFFF ) {
-            u = 0x10000 + ((u & 0x3FF) << 10) | (str.charCodeAt( ++i ) & 0x3FF);
-        }
-
-        if( u <= 0x7F ) {
-            HEAPU8[ addr++ ] = u;
-        } else if( u <= 0x7FF ) {
-            HEAPU8[ addr++ ] = 0xC0 | (u >> 6);
-            HEAPU8[ addr++ ] = 0x80 | (u & 63);
-        } else if( u <= 0xFFFF ) {
-            HEAPU8[ addr++ ] = 0xE0 | (u >> 12);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
-            HEAPU8[ addr++ ] = 0x80 | (u & 63);
-        } else if( u <= 0x1FFFFF ) {
-            HEAPU8[ addr++ ] = 0xF0 | (u >> 18);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 12) & 63);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
-            HEAPU8[ addr++ ] = 0x80 | (u & 63);
-        } else if( u <= 0x3FFFFFF ) {
-            HEAPU8[ addr++ ] = 0xF8 | (u >> 24);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 18) & 63);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 12) & 63);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
-            HEAPU8[ addr++ ] = 0x80 | (u & 63);
-        } else {
-            HEAPU8[ addr++ ] = 0xFC | (u >> 30);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 24) & 63);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 18) & 63);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 12) & 63);
-            HEAPU8[ addr++ ] = 0x80 | ((u >> 6) & 63);
-            HEAPU8[ addr++ ] = 0x80 | (u & 63);
-        }
-    }
-};
-
-Module.STDWEB_PRIVATE.noop = function() {};
-Module.STDWEB_PRIVATE.to_js = function to_js( address ) {
-    var kind = HEAPU8[ address + 12 ];
-    if( kind === 0 ) {
-        return undefined;
-    } else if( kind === 1 ) {
-        return null;
-    } else if( kind === 2 ) {
-        return HEAP32[ address / 4 ];
-    } else if( kind === 3 ) {
-        return HEAPF64[ address / 8 ];
-    } else if( kind === 4 ) {
-        var pointer = HEAPU32[ address / 4 ];
-        var length = HEAPU32[ (address + 4) / 4 ];
-        return Module.STDWEB_PRIVATE.to_js_string( pointer, length );
-    } else if( kind === 5 ) {
-        return false;
-    } else if( kind === 6 ) {
-        return true;
-    } else if( kind === 7 ) {
-        var pointer = HEAPU32[ address / 4 ];
-        var length = HEAPU32[ (address + 4) / 4 ];
-        var output = [];
-        for( var i = 0; i < length; ++i ) {
-            output.push( Module.STDWEB_PRIVATE.to_js( pointer + i * 16 ) );
-        }
-        return output;
-    } else if( kind === 8 ) {
-        var value_array_pointer = HEAPU32[ address / 4 ];
-        var length = HEAPU32[ (address + 4) / 4 ];
-        var key_array_pointer = HEAPU32[ (address + 8) / 4 ];
-        var output = {};
-        for( var i = 0; i < length; ++i ) {
-            var key_pointer = HEAPU32[ (key_array_pointer + i * 8) / 4 ];
-            var key_length = HEAPU32[ (key_array_pointer + 4 + i * 8) / 4 ];
-            var key = Module.STDWEB_PRIVATE.to_js_string( key_pointer, key_length );
-            var value = Module.STDWEB_PRIVATE.to_js( value_array_pointer + i * 16 );
-            output[ key ] = value;
-        }
-        return output;
-    } else if( kind === 9 ) {
-        return Module.STDWEB_PRIVATE.acquire_js_reference( HEAP32[ address / 4 ] );
-    } else if( kind === 10 ) {
-        var adapter_pointer = HEAPU32[ address / 4 ];
-        var pointer = HEAPU32[ (address + 4) / 4 ];
-        var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
-        var output = function() {
-            if( pointer === 0 ) {
-                throw new ReferenceError( "Already dropped Rust function called!" );
-            }
-
-            var args = Module.STDWEB_PRIVATE.alloc( 16 );
-            Module.STDWEB_PRIVATE.serialize_array( args, arguments );
-            Module.STDWEB_PRIVATE.dyncall( "vii", adapter_pointer, [pointer, args] );
-            var result = Module.STDWEB_PRIVATE.tmp;
-            Module.STDWEB_PRIVATE.tmp = null;
-
-            return result;
-        };
-
-        output.drop = function() {
-            output.drop = Module.STDWEB_PRIVATE.noop;
-            var function_pointer = pointer;
-            pointer = 0;
-
-            Module.STDWEB_PRIVATE.dyncall( "vi", deallocator_pointer, [function_pointer] );
-        };
-
-        return output;
-    } else if( kind === 13 ) {
-        var adapter_pointer = HEAPU32[ address / 4 ];
-        var pointer = HEAPU32[ (address + 4) / 4 ];
-        var deallocator_pointer = HEAPU32[ (address + 8) / 4 ];
-        var output = function() {
-            if( pointer === 0 ) {
-                throw new ReferenceError( "Already called or dropped FnOnce function called!" );
-            }
-
-            output.drop = Module.STDWEB_PRIVATE.noop;
-            var function_pointer = pointer;
-            pointer = 0;
-
-            var args = Module.STDWEB_PRIVATE.alloc( 16 );
-            Module.STDWEB_PRIVATE.serialize_array( args, arguments );
-            Module.STDWEB_PRIVATE.dyncall( "vii", adapter_pointer, [function_pointer, args] );
-            var result = Module.STDWEB_PRIVATE.tmp;
-            Module.STDWEB_PRIVATE.tmp = null;
-
-            return result;
-        };
-
-        output.drop = function() {
-            output.drop = Module.STDWEB_PRIVATE.noop;
-            var function_pointer = pointer;
-            pointer = 0;
-
-            Module.STDWEB_PRIVATE.dyncall( "vi", deallocator_pointer, [function_pointer] );
-        };
-
-        return output;
-    } else if( kind === 14 ) {
-        var pointer = HEAPU32[ address / 4 ];
-        var length = HEAPU32[ (address + 4) / 4 ];
-        var array_kind = HEAPU32[ (address + 8) / 4 ];
-        var pointer_end = pointer + length;
-
-        switch( array_kind ) {
-            case 0:
-                return HEAPU8.subarray( pointer, pointer_end );
-            case 1:
-                return HEAP8.subarray( pointer, pointer_end );
-            case 2:
-                return HEAPU16.subarray( pointer, pointer_end );
-            case 3:
-                return HEAP16.subarray( pointer, pointer_end );
-            case 4:
-                return HEAPU32.subarray( pointer, pointer_end );
-            case 5:
-                return HEAP32.subarray( pointer, pointer_end );
-            case 6:
-                return HEAPF32.subarray( pointer, pointer_end );
-            case 7:
-                return HEAPF64.subarray( pointer, pointer_end );
-        }
-    } else if( kind === 15 ) {
-        return Module.STDWEB_PRIVATE.get_raw_value( HEAPU32[ address / 4 ] );
-    }
-};
-
-Module.STDWEB_PRIVATE.serialize_object = function serialize_object( address, value ) {
-    var keys = Object.keys( value );
-    var length = keys.length;
-    var key_array_pointer = Module.STDWEB_PRIVATE.alloc( length * 8 );
-    var value_array_pointer = Module.STDWEB_PRIVATE.alloc( length * 16 );
-    HEAPU8[ address + 12 ] = 8;
-    HEAPU32[ address / 4 ] = value_array_pointer;
-    HEAPU32[ (address + 4) / 4 ] = length;
-    HEAPU32[ (address + 8) / 4 ] = key_array_pointer;
-    for( var i = 0; i < length; ++i ) {
-        var key = keys[ i ];
-        var key_length = Module.STDWEB_PRIVATE.utf8_len( key );
-        var key_pointer = Module.STDWEB_PRIVATE.alloc( key_length );
-        Module.STDWEB_PRIVATE.to_utf8( key, key_pointer );
-
-        var key_address = key_array_pointer + i * 8;
-        HEAPU32[ key_address / 4 ] = key_pointer;
-        HEAPU32[ (key_address + 4) / 4 ] = key_length;
-
-        Module.STDWEB_PRIVATE.from_js( value_array_pointer + i * 16, value[ key ] );
-    }
-};
-
-Module.STDWEB_PRIVATE.serialize_array = function serialize_array( address, value ) {
-    var length = value.length;
-    var pointer = Module.STDWEB_PRIVATE.alloc( length * 16 );
-    HEAPU8[ address + 12 ] = 7;
-    HEAPU32[ address / 4 ] = pointer;
-    HEAPU32[ (address + 4) / 4 ] = length;
-    for( var i = 0; i < length; ++i ) {
-        Module.STDWEB_PRIVATE.from_js( pointer + i * 16, value[ i ] );
-    }
-};
-
-Module.STDWEB_PRIVATE.from_js = function from_js( address, value ) {
-    var kind = Object.prototype.toString.call( value );
-    if( kind === "[object String]" ) {
-        var length = Module.STDWEB_PRIVATE.utf8_len( value );
-        var pointer = 0;
-        if( length > 0 ) {
-            pointer = Module.STDWEB_PRIVATE.alloc( length );
-            Module.STDWEB_PRIVATE.to_utf8( value, pointer );
-        }
-        HEAPU8[ address + 12 ] = 4;
-        HEAPU32[ address / 4 ] = pointer;
-        HEAPU32[ (address + 4) / 4 ] = length;
-    } else if( kind === "[object Number]" ) {
-        if( value === (value|0) ) {
-            HEAPU8[ address + 12 ] = 2;
-            HEAP32[ address / 4 ] = value;
-        } else {
-            HEAPU8[ address + 12 ] = 3;
-            HEAPF64[ address / 8 ] = value;
-        }
-    } else if( value === null ) {
-        HEAPU8[ address + 12 ] = 1;
-    } else if( value === undefined ) {
-        HEAPU8[ address + 12 ] = 0;
-    } else if( value === false ) {
-        HEAPU8[ address + 12 ] = 5;
-    } else if( value === true ) {
-        HEAPU8[ address + 12 ] = 6;
-    } else if( kind === "[object Symbol]" ) {
-        var id = Module.STDWEB_PRIVATE.register_raw_value( value );
-        HEAPU8[ address + 12 ] = 15;
-        HEAP32[ address / 4 ] = id;
-    } else {
-        var refid = Module.STDWEB_PRIVATE.acquire_rust_reference( value );
-        HEAPU8[ address + 12 ] = 9;
-        HEAP32[ address / 4 ] = refid;
-    }
-};
-
-// This is ported from Rust's stdlib; it's faster than
-// the string conversion from Emscripten.
-Module.STDWEB_PRIVATE.to_js_string = function to_js_string( index, length ) {
-    index = index|0;
-    length = length|0;
-    var end = (index|0) + (length|0);
-    var output = "";
-    while( index < end ) {
-        var x = HEAPU8[ index++ ];
-        if( x < 128 ) {
-            output += String.fromCharCode( x );
-            continue;
-        }
-        var init = (x & (0x7F >> 2));
-        var y = 0;
-        if( index < end ) {
-            y = HEAPU8[ index++ ];
-        }
-        var ch = (init << 6) | (y & 63);
-        if( x >= 0xE0 ) {
-            var z = 0;
-            if( index < end ) {
-                z = HEAPU8[ index++ ];
-            }
-            var y_z = ((y & 63) << 6) | (z & 63);
-            ch = init << 12 | y_z;
-            if( x >= 0xF0 ) {
-                var w = 0;
-                if( index < end ) {
-                    w = HEAPU8[ index++ ];
-                }
-                ch = (init & 7) << 18 | ((y_z << 6) | (w & 63));
-
-                output += String.fromCharCode( 0xD7C0 + (ch >> 10) );
-                ch = 0xDC00 + (ch & 0x3FF);
-            }
-        }
-        output += String.fromCharCode( ch );
-        continue;
-    }
-    return output;
-};
-
-Module.STDWEB_PRIVATE.id_to_ref_map = {};
-Module.STDWEB_PRIVATE.id_to_refcount_map = {};
-Module.STDWEB_PRIVATE.ref_to_id_map = new WeakMap();
-// Not all types can be stored in a WeakMap
-Module.STDWEB_PRIVATE.ref_to_id_map_fallback = new Map();
-Module.STDWEB_PRIVATE.last_refid = 1;
-
-Module.STDWEB_PRIVATE.id_to_raw_value_map = {};
-Module.STDWEB_PRIVATE.last_raw_value_id = 1;
-
-Module.STDWEB_PRIVATE.acquire_rust_reference = function( reference ) {
-    if( reference === undefined || reference === null ) {
-        return 0;
-    }
-
-    var id_to_refcount_map = Module.STDWEB_PRIVATE.id_to_refcount_map;
-    var id_to_ref_map = Module.STDWEB_PRIVATE.id_to_ref_map;
-    var ref_to_id_map = Module.STDWEB_PRIVATE.ref_to_id_map;
-    var ref_to_id_map_fallback = Module.STDWEB_PRIVATE.ref_to_id_map_fallback;
-
-    var refid = ref_to_id_map.get( reference );
-    if( refid === undefined ) {
-        refid = ref_to_id_map_fallback.get( reference );
-    }
-    if( refid === undefined ) {
-        refid = Module.STDWEB_PRIVATE.last_refid++;
-        try {
-            ref_to_id_map.set( reference, refid );
-        } catch (e) {
-            ref_to_id_map_fallback.set( reference, refid );
-        }
-    }
-
-    if( refid in id_to_ref_map ) {
-        id_to_refcount_map[ refid ]++;
-    } else {
-        id_to_ref_map[ refid ] = reference;
-        id_to_refcount_map[ refid ] = 1;
-    }
-
-    return refid;
-};
-
-Module.STDWEB_PRIVATE.acquire_js_reference = function( refid ) {
-    return Module.STDWEB_PRIVATE.id_to_ref_map[ refid ];
-};
-
-Module.STDWEB_PRIVATE.increment_refcount = function( refid ) {
-    Module.STDWEB_PRIVATE.id_to_refcount_map[ refid ]++;
-};
-
-Module.STDWEB_PRIVATE.decrement_refcount = function( refid ) {
-    var id_to_refcount_map = Module.STDWEB_PRIVATE.id_to_refcount_map;
-    if( 0 == --id_to_refcount_map[ refid ] ) {
-        var id_to_ref_map = Module.STDWEB_PRIVATE.id_to_ref_map;
-        var ref_to_id_map_fallback = Module.STDWEB_PRIVATE.ref_to_id_map_fallback;
-        var reference = id_to_ref_map[ refid ];
-        delete id_to_ref_map[ refid ];
-        delete id_to_refcount_map[ refid ];
-        ref_to_id_map_fallback.delete(reference);
-    }
-};
-
-Module.STDWEB_PRIVATE.register_raw_value = function( value ) {
-    var id = Module.STDWEB_PRIVATE.last_raw_value_id++;
-    Module.STDWEB_PRIVATE.id_to_raw_value_map[ id ] = value;
-    return id;
-};
-
-Module.STDWEB_PRIVATE.unregister_raw_value = function( id ) {
-    delete Module.STDWEB_PRIVATE.id_to_raw_value_map[ id ];
-};
-
-Module.STDWEB_PRIVATE.get_raw_value = function( id ) {
-    return Module.STDWEB_PRIVATE.id_to_raw_value_map[ id ];
-};
-
-Module.STDWEB_PRIVATE.alloc = function alloc( size ) {
-    return Module.web_malloc( size );
-};
-
-Module.STDWEB_PRIVATE.dyncall = function( signature, ptr, args ) {
-    return Module.web_table.get( ptr ).apply( null, args );
-};
-
-// This is based on code from Emscripten's preamble.js.
-Module.STDWEB_PRIVATE.utf8_len = function utf8_len( str ) {
-    var len = 0;
-    for( var i = 0; i < str.length; ++i ) {
-        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code unit, not a Unicode code point of the character! So decode UTF16->UTF32->UTF8.
-        // See http://unicode.org/faq/utf_bom.html#utf16-3
-        var u = str.charCodeAt( i ); // possibly a lead surrogate
-        if( u >= 0xD800 && u <= 0xDFFF ) {
-            u = 0x10000 + ((u & 0x3FF) << 10) | (str.charCodeAt( ++i ) & 0x3FF);
-        }
-
-        if( u <= 0x7F ) {
-            ++len;
-        } else if( u <= 0x7FF ) {
-            len += 2;
-        } else if( u <= 0xFFFF ) {
-            len += 3;
-        } else if( u <= 0x1FFFFF ) {
-            len += 4;
-        } else if( u <= 0x3FFFFFF ) {
-            len += 5;
-        } else {
-            len += 6;
-        }
-    }
-    return len;
-};
-
-Module.STDWEB_PRIVATE.prepare_any_arg = function( value ) {
-    var arg = Module.STDWEB_PRIVATE.alloc( 16 );
-    Module.STDWEB_PRIVATE.from_js( arg, value );
-    return arg;
-};
-
-Module.STDWEB_PRIVATE.acquire_tmp = function( dummy ) {
-    var value = Module.STDWEB_PRIVATE.tmp;
-    Module.STDWEB_PRIVATE.tmp = null;
-    return value;
-};
-
-
-
-    var HEAP8 = null;
-    var HEAP16 = null;
-    var HEAP32 = null;
-    var HEAPU8 = null;
-    var HEAPU16 = null;
-    var HEAPU32 = null;
-    var HEAPF32 = null;
-    var HEAPF64 = null;
-
-    Object.defineProperty( Module, 'exports', { value: {} } );
-
-    function __web_on_grow() {
-        var buffer = Module.instance.exports.memory.buffer;
-        HEAP8 = new Int8Array( buffer );
-        HEAP16 = new Int16Array( buffer );
-        HEAP32 = new Int32Array( buffer );
-        HEAPU8 = new Uint8Array( buffer );
-        HEAPU16 = new Uint16Array( buffer );
-        HEAPU32 = new Uint32Array( buffer );
-        HEAPF32 = new Float32Array( buffer );
-        HEAPF64 = new Float64Array( buffer );
-    }
-
-    return {
-        imports: {
-            env: {
-                "__extjs_80d6d56760c65e49b7be8b6b01c1ea861b046bf0": function($0) {
-                Module.STDWEB_PRIVATE.decrement_refcount( $0 );
-            },
-            "__extjs_4cc2b2ed53586a2bd32ca2206724307e82bb32ff": function($0, $1) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);($0). appendChild (($1));
-            },
-            "__extjs_b42435b496a40339524d037e2aaaad915a207cea": function($0, $1) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);($0). lineWidth = ($1);
-            },
-            "__extjs_db305a6c5a92182cd239c9b558d60da7483bb5aa": function($0, $1) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);($0). strokeStyle = ($1);
-            },
-            "__extjs_0e2bf459d0b8f87b08234063cba9ddd7a35bfbc6": function($0, $1, $2, $3, $4, $5, $6) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);$4 = Module.STDWEB_PRIVATE.to_js($4);$5 = Module.STDWEB_PRIVATE.to_js($5);$6 = Module.STDWEB_PRIVATE.to_js($6);($0). arc (($1), ($2), ($3), ($4), ($5), ($6));
-            },
-            "__extjs_c316475a01a50f3dfea2c3ec1fbe6277eafe16f2": function($0) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);($0). beginPath ();
-            },
-            "__extjs_6cbcfe66c0ba4caf569853396b7e9ecc6c99ec90": function($0, $1, $2, $3, $4) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);$4 = Module.STDWEB_PRIVATE.to_js($4);($0). clearRect (($1), ($2), ($3), ($4));
-            },
-            "__extjs_bf4a1d0ebf8d0a83d15d3c9334ad2fcafbd5b71e": function($0, $1, $2, $3) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);($0). fillText (($1), ($2), ($3));
-            },
-            "__extjs_bc37356eeab30045188419c598a7bc84ea209f2a": function($0, $1, $2, $3, $4) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);$4 = Module.STDWEB_PRIVATE.to_js($4);($0). fillText (($1), ($2), ($3), ($4));
-            },
-            "__extjs_4c3d23fbc56db3e2ef0701318fb0fc2a36d37776": function($0, $1, $2) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);($0). lineTo (($1), ($2));
-            },
-            "__extjs_f930b076cc761caaaaaaf5dfb548bb4e2ef5f084": function($0, $1, $2) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);($0). moveTo (($1), ($2));
-            },
-            "__extjs_21adbe0d4961da567547899cd36d8c90c9ccc8b8": function($0) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);($0). stroke ();
-            },
-            "__extjs_774c73f8d5accb8c8e3c08b4ab0d34c70766e846": function($0, $1, $2, $3, $4) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);$4 = Module.STDWEB_PRIVATE.to_js($4);($0). strokeRect (($1), ($2), ($3), ($4));
-            },
-            "__extjs_050e3f8fd41b9411cfd3fd413ce036926ced0f94": function($0) {
-                return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof CanvasRenderingContext2D) | 0;
-            },
-            "__extjs_b99a06f7004f71b3f4e223fbd9f24cf2620b1047": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). message ;})());
-            },
-            "__extjs_da39a3ee5e6b4b0d3255bfef95601890afd80709": function($0) {
-                
-            },
-            "__extjs_db0226ae1bbecd407e9880ee28ddc70fc3322d9c": function($0) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);Module.STDWEB_PRIVATE.unregister_raw_value (($0));
-            },
-            "__extjs_7c5535365a3df6a4cc1f59c4a957bfce1dbfb8ee": function($0, $1, $2, $3) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);$3 = Module.STDWEB_PRIVATE.to_js($3);Module.STDWEB_PRIVATE.from_js($0, (function(){var listener = ($1); ($2). addEventListener (($3), listener); return listener ;})());
-            },
-            "__extjs_1522b5ea59072f4360f8c07a28b1f8548cb70424": function($0, $1, $2) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);Module.STDWEB_PRIVATE.from_js($0, (function(){try {let bytes = require ("crypto"). randomBytes (($1)); HEAPU8.set (new Uint8Array (bytes), ($2)); return {success : true};}catch (err){return {success : false , error : err};}})());
-            },
-            "__extjs_1c8769c3b326d77ceb673ada3dc887cf1d509509": function($0) {
-                Module.STDWEB_PRIVATE.from_js($0, (function(){return document ;})());
-            },
-            "__extjs_a8e1d9cfe0b41d7d61b849811ad1cfba32de989b": function($0, $1, $2) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). createElement (($2));})());
-            },
-            "__extjs_8c32019649bb581b1b742eeedfc410e2bedd56a6": function($0, $1) {
-                var array = Module.STDWEB_PRIVATE.acquire_js_reference( $0 );Module.STDWEB_PRIVATE.serialize_array( $1, array );
-            },
-            "__extjs_5c85c7d6be5e018baf0159f903350554c44f92f5": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). offsetX ;})());
-            },
-            "__extjs_9f22d4ca7bc938409787341b7db181f8dd41e6df": function($0) {
-                Module.STDWEB_PRIVATE.increment_refcount( $0 );
-            },
-            "__extjs_be62a332d41ddd62b4b77feacf9ec13c7ccb1191": function($0, $1) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);($0). font = ($1);
-            },
-            "__extjs_84355afea1755aaf0e679669281585900c995537": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). parentNode ;})());
-            },
-            "__extjs_a72c1c3711c212b05f52b8743debbfb8f27e1926": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). height ;})());
-            },
-            "__extjs_87b4e4c3d34c9f944cf0b8e8c1d62a587e5798be": function($0, $1, $2) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);Module.STDWEB_PRIVATE.from_js($0, (function(){try {let array = new Uint8Array (($1)); self.crypto.getRandomValues (array); HEAPU8.set (array , ($2)); return {success : true};}catch (err){return {success : false , error : err};}})());
-            },
-            "__extjs_20c4bdc189978f19e808c7183a7f739cd7917740": function($0) {
-                Module.STDWEB_PRIVATE.from_js($0, (function(){setTimeout (function (){alert ("GAME FINISHED");}, 500);})());
-            },
-            "__extjs_20ad46df0c338e20bd94061cd656da90c3ba5ba5": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). getContext ("2d");})());
-            },
-            "__extjs_69920acb495ef5b5f2a2907f2b2109c50f25a632": function($0) {
-                return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof HTMLCanvasElement) | 0;
-            },
-            "__extjs_573f78ddb74010fede405487d72f98e9ee4ed97f": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). ty})());
-            },
-            "__extjs_7ed1f62e776725bc93d54f5154abfb28a460024a": function($0) {
-                return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof MouseEvent) | 0;
-            },
-            "__extjs_ff5103e6cc179d13b4c7a785bdce2708fd559fc0": function($0) {
-                Module.STDWEB_PRIVATE.tmp = Module.STDWEB_PRIVATE.to_js( $0 );
-            },
-            "__extjs_d221a73044ecbe8983efcca309ca8a549ed73a98": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){let div_container = ($1); div_container.id = "canvas-container" ; div_container.tabIndex = 1 ; div_container.focus ();})());
-            },
-            "__extjs_6335075a75e36f6bc0c9ba8dce389068e0a2d5d8": function($0) {
-                return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof Error) | 0;
-            },
-            "__extjs_496ebd7b1bc0e6eebd7206e8bee7671ea3b8006f": function($0, $1, $2) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);$2 = Module.STDWEB_PRIVATE.to_js($2);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). querySelector (($2));})());
-            },
-            "__extjs_690fa77630cde409b06b28d7cb33cf9d181b389e": function($0, $1) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);($0). height = ($1);
-            },
-            "__extjs_a91f76b9ef152612487d901da5cb59638ee773d2": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). error})());
-            },
-            "__extjs_cf32fb39093cd2549f37c2d392ef3198dcaa2ad4": function($0) {
-                return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof Node) | 0;
-            },
-            "__extjs_fe1e80bdcfe7f7cb820b64a40f6d286cbd345955": function($0) {
-                return (Module.STDWEB_PRIVATE.acquire_js_reference( $0 ) instanceof Array) | 0;
-            },
-            "__extjs_6c47cfe7b20d140c462be80002863de205806d99": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). width ;})());
-            },
-            "__extjs_9b6375c037b486fe12587b716aff148f791f3e6a": function($0, $1) {
-                $0 = Module.STDWEB_PRIVATE.to_js($0);$1 = Module.STDWEB_PRIVATE.to_js($1);($0). width = ($1);
-            },
-            "__extjs_c44823ca4ffecb1fc63ff99c8d1bd31834669f31": function($0, $1) {
-                $1 = Module.STDWEB_PRIVATE.to_js($1);Module.STDWEB_PRIVATE.from_js($0, (function(){return ($1). success})());
-            },
-            "__extjs_a7ab5f74041fe5b800b5238f34837560623fe11e": function($0) {
-                Module.STDWEB_PRIVATE.from_js($0, (function(){try {if (typeof self ==="object" && typeof self.crypto ==="object" && typeof self.crypto.getRandomValues ==="function"){return {success : true , ty : 1};}if (typeof require ("crypto"). randomBytes ==="function"){return {success : true , ty : 2};}return {success : false , error : new Error ("not supported")};}catch (err){return {success : false , error : err};}})());
-            },
-                "__web_on_grow": __web_on_grow
+function __wbg_get_imports() {
+    const import0 = {
+        __proto__: null,
+        __wbg___wbindgen_debug_string_a57024b9c6e4a48b: function(arg0, arg1) {
+            const ret = debugString(arg1);
+            const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
+        __wbg___wbindgen_is_undefined_6cff064c44e0d823: function(arg0) {
+            const ret = arg0 === undefined;
+            return ret;
+        },
+        __wbg___wbindgen_throw_bb96b2010945f0bc: function(arg0, arg1) {
+            throw new Error(getStringFromWasm0(arg0, arg1));
+        },
+        __wbg_addEventListener_3b8edc02c33d9f77: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+            arg0.addEventListener(getStringFromWasm0(arg1, arg2), arg3);
+        }, arguments); },
+        __wbg_appendChild_d5cbce3d5fa81471: function() { return handleError(function (arg0, arg1) {
+            const ret = arg0.appendChild(arg1);
+            return ret;
+        }, arguments); },
+        __wbg_arc_782f59ce766a8abb: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5) {
+            arg0.arc(arg1, arg2, arg3, arg4, arg5);
+        }, arguments); },
+        __wbg_beginPath_4b87fe7ed5408cac: function(arg0) {
+            arg0.beginPath();
+        },
+        __wbg_body_d6eca0586d628e3c: function(arg0) {
+            const ret = arg0.body;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_clearRect_81c3c80fbe793b63: function(arg0, arg1, arg2, arg3, arg4) {
+            arg0.clearRect(arg1, arg2, arg3, arg4);
+        },
+        __wbg_createElement_7f42344eee7bb810: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = arg0.createElement(getStringFromWasm0(arg1, arg2));
+            return ret;
+        }, arguments); },
+        __wbg_document_ac38448dbfd31a57: function(arg0) {
+            const ret = arg0.document;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_error_757e9472f8410341: function(arg0, arg1) {
+            let deferred0_0;
+            let deferred0_1;
+            try {
+                deferred0_0 = arg0;
+                deferred0_1 = arg1;
+                console.error(getStringFromWasm0(arg0, arg1));
+            } finally {
+                wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
             }
         },
-        initialize: function( instance ) {
-            Object.defineProperty( Module, 'instance', { value: instance } );
-            Object.defineProperty( Module, 'web_malloc', { value: Module.instance.exports.__web_malloc } );
-            Object.defineProperty( Module, 'web_free', { value: Module.instance.exports.__web_free } );
-            Object.defineProperty( Module, 'web_table', { value: Module.instance.exports.__web_table } );
-
-            Module.exports.create_game = function create_game(column_sizes, game_mode) {
-    Module.instance.exports.create_game(Module.STDWEB_PRIVATE.prepare_any_arg(column_sizes), Module.STDWEB_PRIVATE.prepare_any_arg(game_mode));
-}
-;
-            __web_on_grow();
-            
-
-            return Module.exports;
-        }
+        __wbg_fillText_2ebd722b6f37129e: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+            arg0.fillText(getStringFromWasm0(arg1, arg2), arg3, arg4);
+        }, arguments); },
+        __wbg_fill_33944400e9c94f79: function(arg0) {
+            arg0.fill();
+        },
+        __wbg_focus_77d7483c7b2b9f30: function() { return handleError(function (arg0) {
+            arg0.focus();
+        }, arguments); },
+        __wbg_getComputedStyle_d0f299f3151ac25e: function() { return handleError(function (arg0, arg1) {
+            const ret = arg0.getComputedStyle(arg1);
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        }, arguments); },
+        __wbg_getContext_71c33f14b63da593: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = arg0.getContext(getStringFromWasm0(arg1, arg2));
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        }, arguments); },
+        __wbg_getPropertyValue_50144438fb4fc8f4: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+            const ret = arg1.getPropertyValue(getStringFromWasm0(arg2, arg3));
+            const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        }, arguments); },
+        __wbg_height_e56f6fb197710e09: function(arg0) {
+            const ret = arg0.height;
+            return ret;
+        },
+        __wbg_instanceof_CanvasRenderingContext2d_d23139c3ef7651a3: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof CanvasRenderingContext2D;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
+        },
+        __wbg_instanceof_HtmlCanvasElement_327e7f7530c72bbd: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof HTMLCanvasElement;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
+        },
+        __wbg_instanceof_HtmlElement_6b02a3740edba922: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof HTMLElement;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
+        },
+        __wbg_instanceof_Window_5625ff9937037a38: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof Window;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
+        },
+        __wbg_lineTo_9495a068a4f48283: function(arg0, arg1, arg2) {
+            arg0.lineTo(arg1, arg2);
+        },
+        __wbg_moveTo_a5882cdf1a7d39d9: function(arg0, arg1, arg2) {
+            arg0.moveTo(arg1, arg2);
+        },
+        __wbg_new_227d7c05414eb861: function() {
+            const ret = new Error();
+            return ret;
+        },
+        __wbg_offsetLeft_67e583681656bca0: function(arg0) {
+            const ret = arg0.offsetLeft;
+            return ret;
+        },
+        __wbg_offsetTop_d943dcc8dd90278b: function(arg0) {
+            const ret = arg0.offsetTop;
+            return ret;
+        },
+        __wbg_offsetX_2db1c144fa76228b: function(arg0) {
+            const ret = arg0.offsetX;
+            return ret;
+        },
+        __wbg_parentElement_ef76606593484767: function(arg0) {
+            const ret = arg0.parentElement;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_querySelector_2c472eddb417c6b3: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = arg0.querySelector(getStringFromWasm0(arg1, arg2));
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        }, arguments); },
+        __wbg_querySelector_839d6534e69c0f64: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = arg0.querySelector(getStringFromWasm0(arg1, arg2));
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        }, arguments); },
+        __wbg_random_b0d98802be10ff20: function() {
+            const ret = Math.random();
+            return ret;
+        },
+        __wbg_remove_07453fe173d20eee: function(arg0) {
+            arg0.remove();
+        },
+        __wbg_setAttribute_507f8367905a9c03: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+            arg0.setAttribute(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4));
+        }, arguments); },
+        __wbg_setProperty_684ce273e28a7037: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+            arg0.setProperty(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4));
+        }, arguments); },
+        __wbg_setTimeout_8be4960d8ad2bb76: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = arg0.setTimeout(arg1, arg2);
+            return ret;
+        }, arguments); },
+        __wbg_set_className_bc6ed54ffff19a12: function(arg0, arg1, arg2) {
+            arg0.className = getStringFromWasm0(arg1, arg2);
+        },
+        __wbg_set_fillStyle_52e75a25be60a3ff: function(arg0, arg1, arg2) {
+            arg0.fillStyle = getStringFromWasm0(arg1, arg2);
+        },
+        __wbg_set_fillStyle_feb3e40099a010e6: function(arg0, arg1) {
+            arg0.fillStyle = arg1;
+        },
+        __wbg_set_font_63f9cc44d4c6f102: function(arg0, arg1, arg2) {
+            arg0.font = getStringFromWasm0(arg1, arg2);
+        },
+        __wbg_set_height_d72f2b76484a44de: function(arg0, arg1) {
+            arg0.height = arg1 >>> 0;
+        },
+        __wbg_set_id_ce80620265c5de8d: function(arg0, arg1, arg2) {
+            arg0.id = getStringFromWasm0(arg1, arg2);
+        },
+        __wbg_set_lineWidth_5f9aefcc32e60287: function(arg0, arg1) {
+            arg0.lineWidth = arg1;
+        },
+        __wbg_set_strokeStyle_14c001d4c5439909: function(arg0, arg1) {
+            arg0.strokeStyle = arg1;
+        },
+        __wbg_set_strokeStyle_cce50c69cecc2df7: function(arg0, arg1, arg2) {
+            arg0.strokeStyle = getStringFromWasm0(arg1, arg2);
+        },
+        __wbg_set_tabIndex_a9b7f8d964a179f0: function(arg0, arg1) {
+            arg0.tabIndex = arg1;
+        },
+        __wbg_set_textContent_e027901c7bc836b5: function(arg0, arg1, arg2) {
+            arg0.textContent = arg1 === 0 ? undefined : getStringFromWasm0(arg1, arg2);
+        },
+        __wbg_set_width_36ef6630b22fc519: function(arg0, arg1) {
+            arg0.width = arg1 >>> 0;
+        },
+        __wbg_stack_3b0d974bbf31e44f: function(arg0, arg1) {
+            const ret = arg1.stack;
+            const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
+        __wbg_static_accessor_GLOBAL_THIS_466428f93b4eaa76: function() {
+            const ret = typeof globalThis === 'undefined' ? null : globalThis;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_static_accessor_GLOBAL_c7aea38d4de089bc: function() {
+            const ret = typeof global === 'undefined' ? null : global;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_static_accessor_SELF_42d4fae05e59267a: function() {
+            const ret = typeof self === 'undefined' ? null : self;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_static_accessor_WINDOW_e0db14a0eba6a812: function() {
+            const ret = typeof window === 'undefined' ? null : window;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_strokeRect_1e1fb12083885dd8: function(arg0, arg1, arg2, arg3, arg4) {
+            arg0.strokeRect(arg1, arg2, arg3, arg4);
+        },
+        __wbg_stroke_5f311844f0db0d9a: function(arg0) {
+            arg0.stroke();
+        },
+        __wbg_style_f09d6445af3dd2c6: function(arg0) {
+            const ret = arg0.style;
+            return ret;
+        },
+        __wbg_width_1952934caca67137: function(arg0) {
+            const ret = arg0.width;
+            return ret;
+        },
+        __wbindgen_cast_0000000000000001: function(arg0, arg1) {
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [NamedExternref("MouseEvent")], shim_idx: 43, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
+            const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__hf3a512cb64164003);
+            return ret;
+        },
+        __wbindgen_cast_0000000000000002: function(arg0, arg1) {
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [], shim_idx: 41, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
+            const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__h658e29c7c32b59e3);
+            return ret;
+        },
+        __wbindgen_cast_0000000000000003: function(arg0, arg1) {
+            // Cast intrinsic for `Ref(String) -> Externref`.
+            const ret = getStringFromWasm0(arg0, arg1);
+            return ret;
+        },
+        __wbindgen_init_externref_table: function() {
+            const table = wasm.__wbindgen_externrefs;
+            const offset = table.grow(4);
+            table.set(0, undefined);
+            table.set(offset + 0, undefined);
+            table.set(offset + 1, null);
+            table.set(offset + 2, true);
+            table.set(offset + 3, false);
+        },
+    };
+    return {
+        __proto__: null,
+        "./connect_four_bg.js": import0,
     };
 }
- ));
-}));
+
+function wasm_bindgen__convert__closures_____invoke__h658e29c7c32b59e3(arg0, arg1) {
+    wasm.wasm_bindgen__convert__closures_____invoke__h658e29c7c32b59e3(arg0, arg1);
+}
+
+function wasm_bindgen__convert__closures_____invoke__hf3a512cb64164003(arg0, arg1, arg2) {
+    wasm.wasm_bindgen__convert__closures_____invoke__hf3a512cb64164003(arg0, arg1, arg2);
+}
+
+function addToExternrefTable0(obj) {
+    const idx = wasm.__externref_table_alloc();
+    wasm.__wbindgen_externrefs.set(idx, obj);
+    return idx;
+}
+
+const CLOSURE_DTORS = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(state => wasm.__wbindgen_destroy_closure(state.a, state.b));
+
+function debugString(val) {
+    // primitive types
+    const type = typeof val;
+    if (type == 'number' || type == 'boolean' || val == null) {
+        return  `${val}`;
+    }
+    if (type == 'string') {
+        return `"${val}"`;
+    }
+    if (type == 'symbol') {
+        const description = val.description;
+        if (description == null) {
+            return 'Symbol';
+        } else {
+            return `Symbol(${description})`;
+        }
+    }
+    if (type == 'function') {
+        const name = val.name;
+        if (typeof name == 'string' && name.length > 0) {
+            return `Function(${name})`;
+        } else {
+            return 'Function';
+        }
+    }
+    // objects
+    if (Array.isArray(val)) {
+        const length = val.length;
+        let debug = '[';
+        if (length > 0) {
+            debug += debugString(val[0]);
+        }
+        for(let i = 1; i < length; i++) {
+            debug += ', ' + debugString(val[i]);
+        }
+        debug += ']';
+        return debug;
+    }
+    // Test for built-in
+    const builtInMatches = /\[object ([^\]]+)\]/.exec(toString.call(val));
+    let className;
+    if (builtInMatches && builtInMatches.length > 1) {
+        className = builtInMatches[1];
+    } else {
+        // Failed to match the standard '[object ClassName]'
+        return toString.call(val);
+    }
+    if (className == 'Object') {
+        // we're a user defined class or Object
+        // JSON.stringify avoids problems with cycles, and is generally much
+        // easier than looping through ownProperties of `val`.
+        try {
+            return 'Object(' + JSON.stringify(val) + ')';
+        } catch (_) {
+            return 'Object';
+        }
+    }
+    // errors
+    if (val instanceof Error) {
+        return `${val.name}: ${val.message}\n${val.stack}`;
+    }
+    // TODO we could test for more things here, like `Set`s and `Map`s.
+    return className;
+}
+
+let cachedDataViewMemory0 = null;
+function getDataViewMemory0() {
+    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
+        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
+    }
+    return cachedDataViewMemory0;
+}
+
+function getStringFromWasm0(ptr, len) {
+    return decodeText(ptr >>> 0, len);
+}
+
+let cachedUint32ArrayMemory0 = null;
+function getUint32ArrayMemory0() {
+    if (cachedUint32ArrayMemory0 === null || cachedUint32ArrayMemory0.byteLength === 0) {
+        cachedUint32ArrayMemory0 = new Uint32Array(wasm.memory.buffer);
+    }
+    return cachedUint32ArrayMemory0;
+}
+
+let cachedUint8ArrayMemory0 = null;
+function getUint8ArrayMemory0() {
+    if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
+        cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
+    }
+    return cachedUint8ArrayMemory0;
+}
+
+function handleError(f, args) {
+    try {
+        return f.apply(this, args);
+    } catch (e) {
+        const idx = addToExternrefTable0(e);
+        wasm.__wbindgen_exn_store(idx);
+    }
+}
+
+function isLikeNone(x) {
+    return x === undefined || x === null;
+}
+
+function makeMutClosure(arg0, arg1, f) {
+    const state = { a: arg0, b: arg1, cnt: 1 };
+    const real = (...args) => {
+
+        // First up with a closure we increment the internal reference
+        // count. This ensures that the Rust closure environment won't
+        // be deallocated while we're invoking it.
+        state.cnt++;
+        const a = state.a;
+        state.a = 0;
+        try {
+            return f(a, state.b, ...args);
+        } finally {
+            state.a = a;
+            real._wbg_cb_unref();
+        }
+    };
+    real._wbg_cb_unref = () => {
+        if (--state.cnt === 0) {
+            wasm.__wbindgen_destroy_closure(state.a, state.b);
+            state.a = 0;
+            CLOSURE_DTORS.unregister(state);
+        }
+    };
+    CLOSURE_DTORS.register(real, state, state);
+    return real;
+}
+
+function passArray32ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 4, 4) >>> 0;
+    getUint32ArrayMemory0().set(arg, ptr / 4);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function passStringToWasm0(arg, malloc, realloc) {
+    if (realloc === undefined) {
+        const buf = cachedTextEncoder.encode(arg);
+        const ptr = malloc(buf.length, 1) >>> 0;
+        getUint8ArrayMemory0().subarray(ptr, ptr + buf.length).set(buf);
+        WASM_VECTOR_LEN = buf.length;
+        return ptr;
+    }
+
+    let len = arg.length;
+    let ptr = malloc(len, 1) >>> 0;
+
+    const mem = getUint8ArrayMemory0();
+
+    let offset = 0;
+
+    for (; offset < len; offset++) {
+        const code = arg.charCodeAt(offset);
+        if (code > 0x7F) break;
+        mem[ptr + offset] = code;
+    }
+    if (offset !== len) {
+        if (offset !== 0) {
+            arg = arg.slice(offset);
+        }
+        ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+        const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
+        const ret = cachedTextEncoder.encodeInto(arg, view);
+
+        offset += ret.written;
+        ptr = realloc(ptr, len, offset, 1) >>> 0;
+    }
+
+    WASM_VECTOR_LEN = offset;
+    return ptr;
+}
+
+let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+cachedTextDecoder.decode();
+const MAX_SAFARI_DECODE_BYTES = 2146435072;
+let numBytesDecoded = 0;
+function decodeText(ptr, len) {
+    numBytesDecoded += len;
+    if (numBytesDecoded >= MAX_SAFARI_DECODE_BYTES) {
+        cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+        cachedTextDecoder.decode();
+        numBytesDecoded = len;
+    }
+    return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
+}
+
+const cachedTextEncoder = new TextEncoder();
+
+if (!('encodeInto' in cachedTextEncoder)) {
+    cachedTextEncoder.encodeInto = function (arg, view) {
+        const buf = cachedTextEncoder.encode(arg);
+        view.set(buf);
+        return {
+            read: arg.length,
+            written: buf.length
+        };
+    };
+}
+
+let WASM_VECTOR_LEN = 0;
+
+let wasmModule, wasmInstance, wasm;
+function __wbg_finalize_init(instance, module) {
+    wasmInstance = instance;
+    wasm = instance.exports;
+    wasmModule = module;
+    cachedDataViewMemory0 = null;
+    cachedUint32ArrayMemory0 = null;
+    cachedUint8ArrayMemory0 = null;
+    wasm.__wbindgen_start();
+    return wasm;
+}
+
+async function __wbg_load(module, imports) {
+    if (typeof Response === 'function' && module instanceof Response) {
+        if (!module.ok) {
+            throw new Error(`failed to fetch Wasm: ${module.status} ${module.statusText} fetching '${module.url}'`);
+        }
+
+        if (typeof WebAssembly.instantiateStreaming === 'function') {
+            try {
+                return await WebAssembly.instantiateStreaming(module, imports);
+            } catch (e) {
+                const validResponse = expectedResponseType(module.type);
+
+                if (validResponse && module.headers.get('Content-Type') !== 'application/wasm') {
+                    console.warn("`WebAssembly.instantiateStreaming` failed because your server does not serve Wasm with `application/wasm` MIME type. Falling back to `WebAssembly.instantiate` which is slower. Original error:\n", e);
+
+                } else { throw e; }
+            }
+        }
+
+        const bytes = await module.arrayBuffer();
+        return await WebAssembly.instantiate(bytes, imports);
+    } else {
+        const instance = await WebAssembly.instantiate(module, imports);
+
+        if (instance instanceof WebAssembly.Instance) {
+            return { instance, module };
+        } else {
+            return instance;
+        }
+    }
+
+    function expectedResponseType(type) {
+        switch (type) {
+            case 'basic': case 'cors': case 'default': return true;
+        }
+        return false;
+    }
+}
+
+function initSync(module) {
+    if (wasm !== undefined) return wasm;
+
+
+    if (module !== undefined) {
+        if (Object.getPrototypeOf(module) === Object.prototype) {
+            ({module} = module)
+        } else {
+            console.warn('using deprecated parameters for `initSync()`; pass a single object instead')
+        }
+    }
+
+    const imports = __wbg_get_imports();
+    if (!(module instanceof WebAssembly.Module)) {
+        module = new WebAssembly.Module(module);
+    }
+    const instance = new WebAssembly.Instance(module, imports);
+    return __wbg_finalize_init(instance, module);
+}
+
+async function __wbg_init(module_or_path) {
+    if (wasm !== undefined) return wasm;
+
+
+    if (module_or_path !== undefined) {
+        if (Object.getPrototypeOf(module_or_path) === Object.prototype) {
+            ({module_or_path} = module_or_path)
+        } else {
+            console.warn('using deprecated parameters for the initialization function; pass a single object instead')
+        }
+    }
+
+    if (module_or_path === undefined) {
+        module_or_path = new URL('connect_four_bg.wasm', import.meta.url);
+    }
+    const imports = __wbg_get_imports();
+
+    if (typeof module_or_path === 'string' || (typeof Request === 'function' && module_or_path instanceof Request) || (typeof URL === 'function' && module_or_path instanceof URL)) {
+        module_or_path = fetch(module_or_path);
+    }
+
+    const { instance, module } = await __wbg_load(await module_or_path, imports);
+
+    return __wbg_finalize_init(instance, module);
+}
+
+export { initSync, __wbg_init as default };

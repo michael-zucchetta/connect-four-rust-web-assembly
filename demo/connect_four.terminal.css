@@ -1,0 +1,23 @@
+:root {
+  color-scheme: dark;
+  --bg: #000;
+  --panel: #030303;
+  --panel-2: #070707;
+  --text: #f5f7f7;
+  --muted: #8a8f8f;
+  --line: #303030;
+  --active: #457294;
+  --bar: #285577;
+  --cyan: #0ff;
+  --green: #1cba22;
+  --amber: #d8a100;
+  --red: #e31d13;
+  --piece-red: #ff5f56;
+  --piece-yellow: #ffd866;
+  --canvas-grid: #2f5f2f;
+  --canvas-label: #1cba22;
+  --canvas-disc-stroke: #f5f7f7;
+  --canvas-burst-a: #0ff;
+  --canvas-burst-b: #1cba22;
+  --canvas-burst-c: #d8a100;
+}
