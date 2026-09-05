@@ -41,10 +41,10 @@ pub fn append_div() -> HtmlElement {
 
 fn player_winner_text(player: models::Player) -> &'static str {
     match player {
-        models::Player::Player1 => "Player X wins",
-        models::Player::Player2 => "Player O wins",
-        models::Player::AIPlayer1 => "AI X wins",
-        models::Player::AIPlayer2 => "AI O wins",
+        models::Player::Player1 => "Red player wins",
+        models::Player::Player2 => "Yellow player wins",
+        models::Player::AIPlayer1 => "Red AI wins",
+        models::Player::AIPlayer2 => "Yellow AI wins",
     }
 }
 
