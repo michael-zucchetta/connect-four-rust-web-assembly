@@ -4,8 +4,25 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link href="demo/connect_four.css" rel="stylesheet"/>
+    <link id="theme-bundle" href="demo/connect_four.white.css" rel="stylesheet"/>
     <script type="module">
       import init, { create_game } from './pkg/connect_four.js';
+
+      const themeBundles = {
+        white: 'demo/connect_four.white.css',
+        terminal: 'demo/connect_four.terminal.css',
+      };
+
+      function setTheme(theme) {
+        const selectedTheme = themeBundles[theme] ? theme : 'white';
+        document.body.dataset.theme = selectedTheme;
+        document.getElementById('theme-bundle').setAttribute('href', themeBundles[selectedTheme]);
+        const themeSelector = document.getElementsByName('theme')[0];
+        if (themeSelector) {
+          themeSelector.value = selectedTheme;
+        }
+        localStorage.setItem('connect-four-theme', selectedTheme);
+      }
 
       function initializeColumnHeights(columnsLength) {
         columnsLength = parseInt(columnsLength);
@@ -24,8 +41,11 @@
       }
 
       window.initializeColumnHeights = initializeColumnHeights;
+      window.setTheme = setTheme;
 
       window.onload = async () => {
+        const requestedTheme = new URLSearchParams(window.location.search).get('theme');
+        setTheme(requestedTheme || localStorage.getItem('connect-four-theme') || 'white');
         await init();
         initializeColumnHeights( document.getElementsByName('numberOfColumns')[0].value );
         window.initializeGame = () => {
@@ -38,7 +58,6 @@
           create_game(columnLengths, difficulty);
           document.getElementById('submit').disabled = true;
           document.getElementById('reset').hidden = false;
-          document.getElementById('game-status').textContent = 'Your move';
           document.body.classList.add('game-started');
           return false;
         };
@@ -59,6 +78,14 @@
           </div>
 
           <form action="POST" onsubmit="return initializeGame()" class="setup-form">
+            <label class="field">
+              <span>bundle</span>
+              <select name="theme" onchange="setTheme(this.value)">
+                <option value="white">White README</option>
+                <option value="terminal">Terminal</option>
+              </select>
+            </label>
+
             <label class="field">
               <span>--ai-level</span>
               <select name="difficulty">

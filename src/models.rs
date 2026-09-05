@@ -114,6 +114,19 @@ impl ConnectFourBoard {
         true
     }
 
+    pub fn landing_row(&self, move_column: usize) -> Option<usize> {
+        if move_column >= self.width {
+            return None;
+        }
+
+        self.board[move_column].iter().rposition(|position| {
+            matches!(
+                *position,
+                ConnectFourMove::EmptyPosition | ConnectFourMove::EmptyIgnoredPosition
+            )
+        })
+    }
+
     pub fn empty_moves_by_column(&self) -> Vec<usize> {
         self.board
             .iter()

@@ -25,9 +25,25 @@ impl Drawer<()> for ConnectFourBoard {
     }
 }
 
+fn theme_color(name: &str, fallback: &str) -> String {
+    web_sys::window()
+        .and_then(|window| {
+            window
+                .document()
+                .and_then(|document| document.body())
+                .and_then(|body| window.get_computed_style(&body).ok().flatten())
+        })
+        .and_then(|style| style.get_property_value(name).ok())
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| fallback.to_string())
+}
+
 fn draw_disc(canvas_context: &CanvasRenderingContext2d, x: usize, y: usize, color: &str) -> () {
+    let disc_stroke = theme_color("--canvas-disc-stroke", "#f5f7f7");
+
     canvas_context.set_fill_style(&JsValue::from(color));
-    canvas_context.set_stroke_style(&JsValue::from("#f5f7f7"));
+    canvas_context.set_stroke_style(&JsValue::from(&disc_stroke));
     canvas_context.begin_path();
     canvas_context
         .arc(
@@ -40,15 +56,24 @@ fn draw_disc(canvas_context: &CanvasRenderingContext2d, x: usize, y: usize, colo
         .unwrap();
     canvas_context.fill();
     canvas_context.stroke();
-    canvas_context.set_stroke_style(&JsValue::from("#2f5f2f"));
 }
 
 pub fn draw_o(canvas_context: &CanvasRenderingContext2d, x: usize, y: usize) -> () {
-    draw_disc(canvas_context, x, y, "#ffd866");
+    draw_disc(
+        canvas_context,
+        x,
+        y,
+        &theme_color("--piece-yellow", "#ffd866"),
+    );
 }
 
 pub fn draw_x(canvas_context: &CanvasRenderingContext2d, x: usize, y: usize) -> () {
-    draw_disc(canvas_context, x, y, "#ff5f56");
+    draw_disc(
+        canvas_context,
+        x,
+        y,
+        &theme_color("--piece-red", "#ff5f56"),
+    );
 }
 
 pub fn draw_non_playable(canvas_context: &CanvasRenderingContext2d, x: usize, y: usize) -> () {
@@ -79,25 +104,27 @@ impl Drawer<CanvasRenderingContext2d> for ConnectFourBoard {
     fn draw(&self, canvas: CanvasRenderingContext2d, width: f64, height: f64) -> () {
         canvas.clear_rect(0f64, 0f64, width, height);
         canvas.set_line_width(2f64);
-        canvas.set_stroke_style_str("#2f5f2f");
         canvas.set_font("25px monospace");
+        let grid = theme_color("--canvas-grid", "#2f5f2f");
         for x in 0..self.width {
             for y in 0..self.height {
+                let position = self.board[x][y];
+                canvas.set_stroke_style_str(&grid);
                 canvas.stroke_rect(
                     f64::from((x * CELL_WIDTH) as i32) + CELL_PADDING,
                     f64::from((y * CELL_HEIGHT) as i32) + PADDING,
                     f64::from(CELL_WIDTH as i32),
                     f64::from(CELL_HEIGHT as i32),
                 );
-                match self.board[x][y] {
+                match position {
                     ConnectFourMove::OPosition => draw_o(&canvas, x, y),
                     ConnectFourMove::XPosition => draw_x(&canvas, x, y),
                     ConnectFourMove::UnplayablePosition => draw_non_playable(&canvas, x, y),
                     _ => (), //println!(""),
                 };
             }
-            canvas.set_fill_style_str("#1cba22");
-            canvas.set_stroke_style_str("#1cba22");
+            let label = theme_color("--canvas-label", "#1cba22");
+            canvas.set_fill_style_str(&label);
             canvas.set_font("25px monospace");
             canvas
                 .fill_text(
@@ -117,12 +144,24 @@ impl Drawer<CanvasRenderingContext2d> for ConnectFourBoard {
         winning_sequence: Vec<(usize, usize)>,
     ) -> () {
         let bursts = [
-            ((self.width * CELL_WIDTH) as f64 * 0.24, 54f64, "#0ff"),
-            ((self.width * CELL_WIDTH) as f64 * 0.52, 44f64, "#1cba22"),
-            ((self.width * CELL_WIDTH) as f64 * 0.78, 60f64, "#d8a100"),
+            (
+                (self.width * CELL_WIDTH) as f64 * 0.24,
+                54f64,
+                theme_color("--canvas-burst-a", "#0ff"),
+            ),
+            (
+                (self.width * CELL_WIDTH) as f64 * 0.52,
+                44f64,
+                theme_color("--canvas-burst-b", "#1cba22"),
+            ),
+            (
+                (self.width * CELL_WIDTH) as f64 * 0.78,
+                60f64,
+                theme_color("--canvas-burst-c", "#d8a100"),
+            ),
         ];
         for (burst_x, burst_y, color) in bursts {
-            canvas.set_stroke_style_str(color);
+            canvas.set_stroke_style_str(&color);
             for index in 0..8 {
                 let angle = index as f64 * std::f64::consts::PI / 4f64;
                 canvas.begin_path();

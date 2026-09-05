@@ -282,16 +282,7 @@ select {
   width: min(420px, 72vw);
   aspect-ratio: 7 / 6;
   border: 1px solid #2f5f2f;
-  background:
-    radial-gradient(circle at 14.28% 16.66%, #000 0 4.4%, transparent 4.6%),
-    radial-gradient(circle at 28.56% 16.66%, #000 0 4.4%, transparent 4.6%),
-    radial-gradient(circle at 42.84% 16.66%, #000 0 4.4%, transparent 4.6%),
-    radial-gradient(circle at 57.12% 16.66%, #000 0 4.4%, transparent 4.6%),
-    radial-gradient(circle at 71.4% 16.66%, #000 0 4.4%, transparent 4.6%),
-    radial-gradient(circle at 85.68% 16.66%, #000 0 4.4%, transparent 4.6%),
-    repeating-linear-gradient(90deg, transparent 0 13.9%, #2f5f2f 14% 14.28%),
-    repeating-linear-gradient(0deg, transparent 0 16.35%, #2f5f2f 16.45% 16.66%),
-    #061006;
+  background: #061006 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 300'%3E%3Cg fill='none' stroke='%232f5f2f' stroke-width='1'%3E%3Cpath d='M50 0v300M100 0v300M150 0v300M200 0v300M250 0v300M300 0v300M0 50h350M0 100h350M0 150h350M0 200h350M0 250h350'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat;
   box-shadow: 0 0 22px rgba(28, 186, 34, 0.16);
   opacity: 0.7;
 }

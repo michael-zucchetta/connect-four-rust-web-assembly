@@ -93,7 +93,7 @@ fn ensure_fireworks_styles() -> () {
                 gap: 10px;
                 min-height: 46px;
                 margin: 0 0 8px;
-                color: #8a8f8f;
+                color: var(--muted, #8a8f8f);
                 font: 700 1rem ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
             }
 
@@ -101,21 +101,21 @@ fn ensure_fireworks_styles() -> () {
                 width: 38px;
                 height: 38px;
                 border-radius: 999px;
-                background: #ff5f56;
-                border: 1px solid #f5f7f7;
+                background: var(--piece-red, #ff5f56);
+                border: 1px solid var(--canvas-disc-stroke, #f5f7f7);
                 box-shadow: 0 0 10px rgba(255, 95, 86, 0.32);
                 animation: connect-four-coin-spin 900ms cubic-bezier(.2, .7, .25, 1.05) 1;
             }
 
             #coin-toss .coin.ai-starts {
-                background: #ffd866;
+                background: var(--piece-yellow, #ffd866);
                 animation-name: connect-four-coin-spin-ai;
             }
 
             #canvas-status {
                 min-height: 24px;
                 margin: 0 0 8px;
-                color: #1cba22;
+                color: var(--canvas-label, #1cba22);
                 font: 700 0.95rem ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
                 text-align: center;
             }
@@ -126,6 +126,26 @@ fn ensure_fireworks_styles() -> () {
                 pointer-events: none;
                 overflow: hidden;
                 z-index: 2;
+            }
+
+            .falling-disc {
+                position: absolute;
+                z-index: 3;
+                width: 38px;
+                height: 38px;
+                border: 1px solid var(--canvas-disc-stroke, #f5f7f7);
+                border-radius: 999px;
+                pointer-events: none;
+                transition: top 220ms cubic-bezier(.2, .72, .18, 1);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.16);
+            }
+
+            .falling-disc.player-x {
+                background: var(--piece-red, #ff5f56);
+            }
+
+            .falling-disc.player-o {
+                background: var(--piece-yellow, #ffd866);
             }
 
             .firework-burst {
@@ -156,18 +176,18 @@ fn ensure_fireworks_styles() -> () {
                 width: 6px;
                 height: 6px;
                 border-radius: 999px;
-                background: #1cba22;
+                background: var(--canvas-burst-b, #1cba22);
                 transform: rotate(var(--angle)) translateX(0);
                 opacity: 0;
                 animation: connect-four-spark-pop 1600ms ease-out infinite;
             }
 
             .firework-burst span:nth-child(3n + 1) {
-                background: #0ff;
+                background: var(--canvas-burst-a, #0ff);
             }
 
             .firework-burst span:nth-child(3n + 2) {
-                background: #d8a100;
+                background: var(--canvas-burst-c, #d8a100);
             }
 
             @keyframes connect-four-spark-pop {
@@ -188,54 +208,54 @@ fn ensure_fireworks_styles() -> () {
 
             @keyframes connect-four-coin-spin {
                 0% {
-                    background: #ff5f56;
+                    background: var(--piece-red, #ff5f56);
                     transform: scaleX(1) scale(0.86);
                 }
 
                 24% {
-                    background: #ffd866;
+                    background: var(--piece-yellow, #ffd866);
                     transform: scaleX(0.12) scale(1);
                 }
 
                 48% {
-                    background: #ff5f56;
+                    background: var(--piece-red, #ff5f56);
                     transform: scaleX(1) scale(1.05);
                 }
 
                 70% {
-                    background: #ffd866;
+                    background: var(--piece-yellow, #ffd866);
                     transform: scaleX(0.12) scale(1.08);
                 }
 
                 100% {
-                    background: #ff5f56;
+                    background: var(--piece-red, #ff5f56);
                     transform: scaleX(1) scale(1);
                 }
             }
 
             @keyframes connect-four-coin-spin-ai {
                 0% {
-                    background: #ffd866;
+                    background: var(--piece-yellow, #ffd866);
                     transform: scaleX(1) scale(0.86);
                 }
 
                 24% {
-                    background: #ff5f56;
+                    background: var(--piece-red, #ff5f56);
                     transform: scaleX(0.12) scale(1);
                 }
 
                 48% {
-                    background: #ffd866;
+                    background: var(--piece-yellow, #ffd866);
                     transform: scaleX(1) scale(1.05);
                 }
 
                 70% {
-                    background: #ff5f56;
+                    background: var(--piece-red, #ff5f56);
                     transform: scaleX(0.12) scale(1.08);
                 }
 
                 100% {
-                    background: #ffd866;
+                    background: var(--piece-yellow, #ffd866);
                     transform: scaleX(1) scale(1);
                 }
             }
@@ -324,6 +344,15 @@ fn append_coin_toss(container: &HtmlElement, player_starts: bool) -> () {
  */
 static mut IS_GAME_ACTIVE: bool = true;
 
+const AI_DELAY_MS: i32 = 650;
+const DROP_ANIMATION_MS: i32 = 240;
+
+#[derive(Clone, Copy)]
+enum AfterMove {
+    ScheduleAi(models::Player),
+    EnableHuman,
+}
+
 fn create_canvas(
     container_id: &str,
     column_sizes: &Vec<u32>,
@@ -401,6 +430,11 @@ impl WebConnectFourGame {
 
         web_connected_four_game.draw();
         set_coin_status(player_starts);
+        if player_starts {
+            set_game_status("Your move");
+        } else {
+            set_game_status("AI thinking");
+        }
 
         let game_state = Rc::new(RefCell::new(web_connected_four_game));
         let event_target = game_state.borrow().canvas.parent_element().unwrap();
@@ -408,17 +442,25 @@ impl WebConnectFourGame {
         let mouse_down = Closure::<dyn FnMut(MouseEvent)>::new(move |event: MouseEvent| unsafe {
             let click_x = event.offset_x() as f64;
             if IS_GAME_ACTIVE {
-                let mut game_cloned = click_game_state.borrow_mut();
-                let player = if game_cloned.level_ai1_opt.is_some() {
-                    models::Player::Player2
-                } else {
-                    models::Player::Player1
+                let (player, position_opt) = {
+                    let game_cloned = click_game_state.borrow();
+                    let player = if game_cloned.level_ai1_opt.is_some() {
+                        models::Player::Player2
+                    } else {
+                        models::Player::Player1
+                    };
+                    let column_sizes = game_cloned.game_board.width;
+                    (
+                        player,
+                        game_cloned.get_column_from_coordinates(click_x, column_sizes),
+                    )
                 };
-                let free_moves = game_cloned.game_board().clone().free_moves();
-                let column_sizes = game_cloned.game_board().clone().width;
-                let position_opt = game_cloned.get_column_from_coordinates(click_x, column_sizes);
                 if position_opt.is_some() {
-                    game_cloned.execute_human_move(position_opt.unwrap(), free_moves, player);
+                    WebConnectFourGame::play_human_turn(
+                        click_game_state.clone(),
+                        position_opt.unwrap(),
+                        player,
+                    );
                 }
             }
         });
@@ -430,7 +472,7 @@ impl WebConnectFourGame {
         if !player_starts {
             let initial_game_state = game_state.clone();
             let initial_ai_move = Closure::<dyn FnMut()>::new(move || {
-                initial_game_state.borrow_mut().execute_initial_ai_move();
+                WebConnectFourGame::play_ai_turn(initial_game_state.clone(), models::Player::AIPlayer2);
             });
             web_sys::window()
                 .unwrap()
@@ -445,33 +487,181 @@ impl WebConnectFourGame {
         game_state.borrow().clone()
     }
 
-    fn execute_initial_ai_move(&mut self) -> () {
+    fn append_falling_disc(
+        &self,
+        column: usize,
+        row: usize,
+        player: models::Player,
+    ) -> Option<HtmlElement> {
+        let document = get_document();
+        let canvas_container = self.canvas.parent_element()?;
+        let canvas_element: HtmlElement = self.canvas.clone().dyn_into::<HtmlElement>().ok()?;
+        let disc = document
+            .create_element("div")
+            .ok()?
+            .dyn_into::<HtmlElement>()
+            .ok()?;
+        let class_name = match models::player_move(player) {
+            models::ConnectFourMove::XPosition => "falling-disc player-x",
+            _ => "falling-disc player-o",
+        };
+        disc.set_class_name(class_name);
+
+        let radius = f64::from(constants::CELL_WIDTH as i32) / 1.7f64 - 10f64;
+        let center_x = constants::CELL_PADDING * 3.5f64
+            + f64::from(constants::CELL_WIDTH as i32) * column as f64;
+        let center_y = constants::CELL_PADDING * 3.5f64 + row as f64 * constants::CELL_HEIGHT as f64;
+        let left = canvas_element.offset_left() as f64 + center_x - radius;
+        let start_top = canvas_element.offset_top() as f64 + constants::PADDING - radius;
+        let end_top = canvas_element.offset_top() as f64 + center_y - radius;
+
+        let style = disc.style();
+        style.set_property("left", &format!("{}px", left)).ok()?;
+        style.set_property("top", &format!("{}px", start_top)).ok()?;
+
+        canvas_container.append_child(&disc).ok()?;
+
+        let animated_disc = disc.clone();
+        let start_drop = Closure::<dyn FnMut()>::new(move || {
+            animated_disc
+                .style()
+                .set_property("top", &format!("{}px", end_top))
+                .unwrap();
+        });
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback_and_timeout_and_arguments_0(
+                start_drop.as_ref().unchecked_ref(),
+                20,
+            )
+            .unwrap();
+        start_drop.forget();
+
+        Some(disc)
+    }
+
+    fn choose_ai_move(&mut self, ai_turn: models::Player) -> usize {
         let game_mode = self.game_mode;
-        let ai_turn = models::Player::AIPlayer2;
-        let ai_move = self.game_board().next_winning_move(ai_turn).unwrap_or(
+        self.game_board().next_winning_move(ai_turn).unwrap_or(
             self.game_board()
                 .next_winning_move(game_modes::get_opposite_from_turn(ai_turn, game_mode))
                 .unwrap_or(self.next_ai_move(ai_turn)),
-        );
+        )
+    }
 
-        if self
-            .game_board()
-            .make_move(models::player_move(ai_turn), ai_move)
-        {
-            self.draw();
+    fn schedule_ai_turn(game_state: Rc<RefCell<Self>>, ai_turn: models::Player) -> () {
+        set_game_status("AI thinking");
+        let ai_move = Closure::<dyn FnMut()>::new(move || {
+            WebConnectFourGame::play_ai_turn(game_state.clone(), ai_turn);
+        });
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback_and_timeout_and_arguments_0(
+                ai_move.as_ref().unchecked_ref(),
+                AI_DELAY_MS,
+            )
+            .unwrap();
+        ai_move.forget();
+    }
+
+    fn animate_move(
+        game_state: Rc<RefCell<Self>>,
+        column: usize,
+        player: models::Player,
+        after_move: AfterMove,
+    ) -> () {
+        unsafe {
+            IS_GAME_ACTIVE = false;
         }
+        set_game_status("Dropping");
 
-        if let Some((_, winning_sequence)) = self.game_board.return_winner(0, 0) {
-            unsafe {
-                IS_GAME_ACTIVE = false;
-            }
-            self.draw_endgame(ai_turn, winning_sequence);
-        } else {
+        let landing_row = {
+            let game = game_state.borrow();
+            game.game_board.landing_row(column)
+        };
+        let Some(row) = landing_row else {
             unsafe {
                 IS_GAME_ACTIVE = true;
             }
-        }
+            return;
+        };
+
+        let falling_disc = game_state.borrow().append_falling_disc(column, row, player);
+        let finish_move = Closure::<dyn FnMut()>::new(move || {
+            if let Some(disc) = &falling_disc {
+                disc.remove();
+            }
+
+            let mut game = game_state.borrow_mut();
+            if !game
+                .game_board()
+                .make_move(models::player_move(player), column)
+            {
+                unsafe {
+                    IS_GAME_ACTIVE = true;
+                }
+                return;
+            }
+
+            game.draw();
+            if let Some((_, winning_sequence)) = game.game_board.return_winner(0, 0) {
+                unsafe {
+                    IS_GAME_ACTIVE = false;
+                }
+                game.draw_endgame(player, winning_sequence);
+                return;
+            }
+
+            if game.game_board.moves_left() == 0 {
+                unsafe {
+                    IS_GAME_ACTIVE = false;
+                }
+                set_game_status("Draw");
+                return;
+            }
+
+            drop(game);
+            match after_move {
+                AfterMove::ScheduleAi(ai_turn) => WebConnectFourGame::schedule_ai_turn(
+                    game_state.clone(),
+                    ai_turn,
+                ),
+                AfterMove::EnableHuman => unsafe {
+                    IS_GAME_ACTIVE = true;
+                    set_game_status("Your move");
+                },
+            }
+        });
+        web_sys::window()
+            .unwrap()
+            .set_timeout_with_callback_and_timeout_and_arguments_0(
+                finish_move.as_ref().unchecked_ref(),
+                DROP_ANIMATION_MS,
+            )
+            .unwrap();
+        finish_move.forget();
     }
+
+    fn play_human_turn(
+        game_state: Rc<RefCell<Self>>,
+        chosen_move: usize,
+        game_turn: models::Player,
+    ) -> () {
+        let game_mode = game_state.borrow().game_mode;
+        let ai_turn = game_modes::get_opposite_from_turn(game_turn, game_mode);
+        WebConnectFourGame::animate_move(
+            game_state,
+            chosen_move,
+            game_turn,
+            AfterMove::ScheduleAi(ai_turn),
+        );
+    }
+
+    fn play_ai_turn(game_state: Rc<RefCell<Self>>, ai_turn: models::Player) -> () {
+        let ai_move = game_state.borrow_mut().choose_ai_move(ai_turn);
+        WebConnectFourGame::animate_move(game_state, ai_move, ai_turn, AfterMove::EnableHuman);
+    }
+
 }
 
 impl game::ConnectFourGame for WebConnectFourGame {
