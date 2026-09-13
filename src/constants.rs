@@ -3,7 +3,7 @@ pub static ASCII_UPPERCASE: &'static [char] = &[
     'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 ];
 
-pub const CELL_WIDTH: usize = 50usize;
-pub const CELL_HEIGHT: usize = 50usize;
+pub const CELL_WIDTH: usize = 57usize;
+pub const CELL_HEIGHT: usize = 57usize;
 pub const CELL_PADDING: f64 = 10f64;
 pub const PADDING: f64 = 10f64;
