@@ -66,9 +66,6 @@ fn set_coin_status(player_starts: bool) -> () {
     if let Ok(Some(status_element)) = get_document().query_selector("#coin-result") {
         status_element.set_text_content(Some(message));
     }
-    if let Ok(Some(status_element)) = get_document().query_selector("#coin-result-toolbar") {
-        status_element.set_text_content(Some(message));
-    }
 }
 
 fn ensure_fireworks_styles() -> () {
@@ -121,13 +118,6 @@ fn ensure_fireworks_styles() -> () {
                 color: var(--canvas-label, #1cba22);
                 font: 700 0.95rem ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
                 text-align: center;
-            }
-
-            @media (max-width: 520px) {
-                #coin-toss,
-                #canvas-status {
-                    display: none;
-                }
             }
 
             .fireworks-layer {
@@ -450,22 +440,10 @@ impl WebConnectFourGame {
         let event_target = game_state.borrow().canvas.parent_element().unwrap();
         let click_game_state = game_state.clone();
         let mouse_down = Closure::<dyn FnMut(MouseEvent)>::new(move |event: MouseEvent| unsafe {
+            let click_x = event.offset_x() as f64;
             if IS_GAME_ACTIVE {
                 let (player, position_opt) = {
                     let game_cloned = click_game_state.borrow();
-                    let canvas_element: HtmlElement = game_cloned
-                        .canvas
-                        .clone()
-                        .dyn_into::<HtmlElement>()
-                        .unwrap();
-                    let canvas_bounds = canvas_element.get_bounding_client_rect();
-                    let click_x = if canvas_bounds.width() > 0f64 {
-                        (event.client_x() as f64 - canvas_bounds.left())
-                            * game_cloned.canvas.width() as f64
-                            / canvas_bounds.width()
-                    } else {
-                        event.offset_x() as f64
-                    };
                     let player = if game_cloned.level_ai1_opt.is_some() {
                         models::Player::Player2
                     } else {
@@ -533,26 +511,11 @@ impl WebConnectFourGame {
         let center_x = constants::CELL_PADDING * 3.5f64
             + f64::from(constants::CELL_WIDTH as i32) * column as f64;
         let center_y = constants::CELL_PADDING * 3.5f64 + row as f64 * constants::CELL_HEIGHT as f64;
-        let canvas_bounds = canvas_element.get_bounding_client_rect();
-        let container_bounds = canvas_container.get_bounding_client_rect();
-        let scale_x = if self.canvas.width() > 0 {
-            canvas_bounds.width() / self.canvas.width() as f64
-        } else {
-            1f64
-        };
-        let scale_y = if self.canvas.height() > 0 {
-            canvas_bounds.height() / self.canvas.height() as f64
-        } else {
-            1f64
-        };
-        let scaled_radius = radius * scale_x;
-        let left = canvas_bounds.left() - container_bounds.left() + center_x * scale_x - scaled_radius;
-        let start_top = canvas_bounds.top() - container_bounds.top() + constants::PADDING * scale_y - scaled_radius;
-        let end_top = canvas_bounds.top() - container_bounds.top() + center_y * scale_y - scaled_radius;
+        let left = canvas_element.offset_left() as f64 + center_x - radius;
+        let start_top = canvas_element.offset_top() as f64 + constants::PADDING - radius;
+        let end_top = canvas_element.offset_top() as f64 + center_y - radius;
 
         let style = disc.style();
-        style.set_property("width", &format!("{}px", scaled_radius * 2f64)).ok()?;
-        style.set_property("height", &format!("{}px", scaled_radius * 2f64)).ok()?;
         style.set_property("left", &format!("{}px", left)).ok()?;
         style.set_property("top", &format!("{}px", start_top)).ok()?;
 

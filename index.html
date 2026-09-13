@@ -73,7 +73,6 @@
           document.getElementById('submit').disabled = false;
           document.getElementById('reset').hidden = true;
           document.getElementById('game-status').textContent = 'Ready';
-          document.getElementById('coin-result-toolbar').textContent = 'Not started';
           document.body.classList.remove('game-started');
         };
       }
@@ -81,16 +80,17 @@
   </head>
   <body data-production-theme="white">
     <main class="terminal-window">
-      <div class="brand-lockup">
-        <pre aria-label="Connect Four title">  ___ ___  _  _ _  _ ___ ___ _____   _ _   
- / __/ _ \| \| | \| | __/ __|_   _| | | |  
-| (_| (_) | .` | .` | _| (__  | |   |_  _| 
- \___\___/|_|\_|_|\_|___\___| |_|     |_|  </pre>
-        <p><span class="prompt">$</span> cargo run --release --target wasm32</p>
+      <div class="terminal-bar" aria-hidden="true">
+        <span>user@connect-four:/wasm/game</span>
       </div>
 
       <div class="app-shell">
         <section class="setup-panel" aria-label="Game setup">
+          <div class="brand-lockup">
+            <pre aria-label="Connect Four title">CONNECT_FOUR</pre>
+            <p><span class="prompt">$</span> cargo run --release --target wasm32</p>
+          </div>
+
           <form onsubmit="event.preventDefault()" class="setup-form">
             <label id="theme-field" class="field" hidden>
               <span>bundle</span>
@@ -133,7 +133,7 @@
 
         <section class="board-panel" aria-label="Connect Four board">
           <div class="board-toolbar">
-            <span class="toolbar-status"><span class="prompt">$</span> <b id="game-status">Ready</b><span class="mobile-status-extra"> | <b id="coin-result-toolbar">Not started</b></span></span>
+            <span><span class="prompt">$</span> status: <b id="game-status">Ready</b></span>
             <span class="player-key"><b></b> player <i></i> cpu</span>
           </div>
           <div id="game-area" class="board-stage"></div>
