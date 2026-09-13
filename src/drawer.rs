@@ -1,7 +1,6 @@
 use crate::constants::{ASCII_UPPERCASE, CELL_HEIGHT, CELL_PADDING, CELL_WIDTH, PADDING};
 use crate::models::{ConnectFourBoard, ConnectFourMove, Player};
 use web_sys::CanvasRenderingContext2d;
-use web_sys::wasm_bindgen::JsValue;
 
 pub trait Drawer<T> {
     fn draw(&self, canvas: T, width: f64, height: f64) -> ();
@@ -42,8 +41,8 @@ fn theme_color(name: &str, fallback: &str) -> String {
 fn draw_disc(canvas_context: &CanvasRenderingContext2d, x: usize, y: usize, color: &str) -> () {
     let disc_stroke = theme_color("--canvas-disc-stroke", "#f5f7f7");
 
-    canvas_context.set_fill_style(&JsValue::from(color));
-    canvas_context.set_stroke_style(&JsValue::from(&disc_stroke));
+    canvas_context.set_fill_style_str(color);
+    canvas_context.set_stroke_style_str(&disc_stroke);
     canvas_context.begin_path();
     canvas_context
         .arc(
