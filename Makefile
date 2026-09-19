@@ -15,7 +15,7 @@ copy-production-artifacts:
 build-production:
 	RUSTFLAGS="-C opt-level=3" wasm-pack build --release --target web --out-dir pkg
 	$(MAKE) copy-production-artifacts
-	sed -i 's/data-production-theme="[^"]*"/data-production-theme="terminal"/' index.html
+	sed -i 's/data-production-theme="[^"]*"/data-production-theme="white"/' index.html
 
 build-production-terminal:
 	RUSTFLAGS="-C opt-level=3" wasm-pack build --release --target web --out-dir pkg
