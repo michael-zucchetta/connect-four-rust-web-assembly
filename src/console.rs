@@ -69,6 +69,11 @@ impl game::ConnectFourGame for ConsoleConnectFourGame {
                         self.draw();
                         thread::sleep(time::Duration::from_millis(100));
                         break;
+                    } else {
+                        println!(
+                            "Column {} is full; choose another column",
+                            command_as_text.trim()
+                        );
                     }
                 }
                 _ => {
