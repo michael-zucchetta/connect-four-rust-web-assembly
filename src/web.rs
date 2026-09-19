@@ -57,6 +57,12 @@ fn set_game_status(message: &str) -> () {
     }
 }
 
+fn set_timer_text(seconds: u64) {
+    if let Ok(Some(timer_element)) = get_document().query_selector("#game-timer") {
+        timer_element.set_text_content(Some(&format!("Time: {} seconds", seconds)));
+    }
+}
+
 fn set_coin_status(player_starts: bool) -> () {
     let message = if player_starts {
         "Player starts"
@@ -403,6 +409,7 @@ pub struct WebConnectFourGame {
     level_ai2: game_modes::AILevel,
     level_ai1_opt: Option<game_modes::AILevel>,
     canvas: HtmlCanvasElement,
+    started_at_ms: f64,
 }
 
 impl WebConnectFourGame {
@@ -440,7 +447,24 @@ impl WebConnectFourGame {
             level_ai2: level_ai2,
             level_ai1_opt: level_ai1_opt,
             canvas: canvas,
+            started_at_ms: js_sys::Date::now(),
         };
+
+        let timer_start = web_connected_four_game.started_at_ms;
+        set_timer_text(0);
+        let timer = Closure::<dyn FnMut()>::new(move || {
+            let elapsed_seconds =
+                ((js_sys::Date::now() - timer_start) / 1000.0).floor() as u64;
+            set_timer_text(elapsed_seconds);
+        });
+        web_sys::window()
+            .unwrap()
+            .set_interval_with_callback_and_timeout_and_arguments_0(
+                timer.as_ref().unchecked_ref(),
+                1000,
+            )
+            .unwrap();
+        timer.forget();
 
         web_connected_four_game.draw();
         set_coin_status(player_starts);
@@ -703,6 +727,15 @@ impl WebConnectFourGame {
         WebConnectFourGame::animate_move(game_state, ai_move, ai_turn, AfterMove::EnableHuman);
     }
 
+    fn winner_status(&self, player: models::Player) -> String {
+        let elapsed_seconds =
+            ((js_sys::Date::now() - self.started_at_ms) / 1000.0).floor() as u64;
+        format!(
+            "{} in {} seconds",
+            player_winner_text(player),
+            elapsed_seconds
+        )
+    }
 }
 
 impl game::ConnectFourGame for WebConnectFourGame {
@@ -800,7 +833,8 @@ impl game::ConnectFourGame for WebConnectFourGame {
         player: models::Player,
         winning_sequence: Vec<(usize, usize)>,
     ) -> () {
-        set_game_status(player_winner_text(player));
+        let status = self.winner_status(player);
+        set_game_status(&status);
         launch_fireworks();
         let canvas_context: CanvasRenderingContext2d = self
             .canvas
