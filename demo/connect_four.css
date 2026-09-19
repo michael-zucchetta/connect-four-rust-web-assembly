@@ -193,6 +193,7 @@ select {
 }
 
 .board-toolbar {
+  position: relative;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -213,12 +214,20 @@ select {
 }
 
 .toolbar-title {
-  flex: 1 1 auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   min-width: 0;
   color: var(--green);
   font-weight: 700;
   text-align: center;
   text-shadow: 0 0 4px rgba(28, 186, 34, 0.58);
+  white-space: nowrap;
+}
+
+#game-timer {
+  position: absolute;
+  right: 142px;
   white-space: nowrap;
 }
 
@@ -471,6 +480,10 @@ canvas {
 
   .toolbar-title {
     display: none;
+  }
+
+  #game-timer {
+    position: static;
   }
 
   .toolbar-status {
