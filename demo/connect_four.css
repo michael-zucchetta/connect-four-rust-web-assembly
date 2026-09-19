@@ -254,7 +254,8 @@ select {
 .board-stage {
   min-height: 0;
   display: grid;
-  place-items: center;
+  justify-items: center;
+  /* place-items: center; */
   padding: 18px;
   overflow: auto;
   background:
