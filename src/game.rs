@@ -125,7 +125,7 @@ pub trait ConnectFourGame {
             models::Player::Player1 | models::Player::Player2 => {
                 let board = self.game_board().clone();
                 self.execute_human_move(0usize, board.empty_moves_by_column(), game_turn);
-                println!("ARRIVED");
+                self.make_next_move(game_modes::get_opposite_from_turn(game_turn, game_mode));
             }
             models::Player::AIPlayer1 | models::Player::AIPlayer2 => {
                 let ai_move = self.game_board().next_winning_move(game_turn).unwrap_or(
@@ -147,8 +147,12 @@ pub trait ConnectFourGame {
     fn make_next_move(&mut self, game_turn: models::Player) {
         let winner_opt = self.game_board().return_winner(0, 0);
         if winner_opt.is_some() || self.game_board().moves_left() == 0 {
-            let (_, winning_sequence) = winner_opt.unwrap();
-            self.draw_endgame(game_turn, winning_sequence);
+            self.draw_endgame(
+                game_turn,
+                winner_opt
+                    .map(|(_, winning_sequence)| winning_sequence)
+                    .unwrap_or_default(),
+            );
         } else {
             self.get_move_based_on_turn(game_turn.clone());
         }
@@ -174,4 +178,70 @@ pub trait ConnectFourGame {
 
     fn draw_endgame(&mut self, player: models::Player, winning_sequence: Vec<(usize, usize)>)
     -> ();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct TurnDispatchGame {
+        board: models::ConnectFourBoard,
+        next_turn: Option<models::Player>,
+    }
+
+    impl ConnectFourGame for TurnDispatchGame {
+        fn game_board(&mut self) -> &mut models::ConnectFourBoard {
+            &mut self.board
+        }
+
+        fn game_mode(&self) -> &game_modes::Modalities {
+            static MODE: game_modes::Modalities = game_modes::Modalities::HumanVsComputer;
+            &MODE
+        }
+
+        fn level_ai1(&self) -> game_modes::AILevel {
+            game_modes::AILevel::VeryEasy
+        }
+
+        fn level_ai2(&self) -> game_modes::AILevel {
+            game_modes::AILevel::VeryEasy
+        }
+
+        fn execute_human_move(
+            &mut self,
+            _chosen_move: usize,
+            _moves_left: Vec<usize>,
+            _game_turn: models::Player,
+        ) {
+            self.board
+                .make_move(models::ConnectFourMove::XPosition, 0);
+        }
+
+        fn draw(&mut self) {}
+
+        fn draw_endgame(
+            &mut self,
+            _player: models::Player,
+            _winning_sequence: Vec<(usize, usize)>,
+        ) {
+            self.next_turn = None;
+        }
+
+        fn make_next_move(&mut self, game_turn: models::Player) {
+            self.next_turn = Some(game_turn);
+        }
+    }
+
+    #[test]
+    fn human_move_dispatches_the_next_turn() {
+        let column_sizes = vec![7u32, 7];
+        let mut game = TurnDispatchGame {
+            board: models::ConnectFourBoard::new(&column_sizes, &Vec::new()),
+            next_turn: None,
+        };
+
+        game.get_move_based_on_turn(models::Player::Player1);
+
+        assert_eq!(game.next_turn, Some(models::Player::AIPlayer2));
+    }
 }

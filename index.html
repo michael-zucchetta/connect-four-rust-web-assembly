@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link href="demo/connect_four.css" rel="stylesheet"/>
-    <link id="theme-bundle" href="demo/connect_four.white.css" rel="stylesheet"/>
+    <link href="/demo/connect_four.css" rel="stylesheet"/>
+    <link id="theme-bundle" href="/demo/connect_four.terminal.css" rel="stylesheet"/>
     <script type="module">
-      import init, { create_game } from './demo/connect_four.js';
+      import init, { create_game } from '/pkg/connect_four.js';
 
       const themeBundles = {
-        white: 'demo/connect_four.white.css',
-        terminal: 'demo/connect_four.terminal.css',
+        white: '/demo/connect_four.white.css',
+        terminal: '/demo/connect_four.terminal.css',
       };
 
       const showThemeSelector = new URLSearchParams(window.location.search).get('showThemeSelector') === 'true';
@@ -42,8 +42,31 @@
         document.getElementById('column-heights').innerHTML = htmlCode;
       }
 
+      function isMobileSetup() {
+        return window.matchMedia('(max-width: 820px)').matches;
+      }
+
+      function setSetupOpen(open) {
+        const setupToggle = document.getElementById('setup-toggle');
+        if (!setupToggle) {
+          return;
+        }
+
+        document.body.classList.toggle('setup-open', open);
+        document.body.classList.toggle('setup-closed', !open);
+        setupToggle.setAttribute('aria-expanded', String(open));
+        setupToggle.querySelector('.setup-toggle-arrow').textContent = open ? '↓' : '→';
+      }
+
+      function syncSetupForViewport() {
+        setSetupOpen(!isMobileSetup());
+      }
+
       window.initializeColumnHeights = initializeColumnHeights;
       window.setTheme = setTheme;
+      window.toggleSetup = () => {
+        setSetupOpen(!document.body.classList.contains('setup-open'));
+      };
 
       window.onload = async () => {
         const requestedTheme = new URLSearchParams(window.location.search).get('theme');
@@ -54,6 +77,9 @@
         }
         await init();
         initializeColumnHeights( document.getElementsByName('numberOfColumns')[0].value );
+        syncSetupForViewport();
+        window.matchMedia('(max-width: 820px)').addEventListener('change', syncSetupForViewport);
+
         window.initializeGame = () => {
           let numberOfColumns = document.getElementsByName('numberOfColumns')[0].value;
           let difficulty  = document.getElementsByName('difficulty')[0].value;
@@ -65,6 +91,9 @@
           document.getElementById('submit').disabled = true;
           document.getElementById('reset').hidden = false;
           document.body.classList.add('game-started');
+          if (isMobileSetup()) {
+            setSetupOpen(false);
+          }
           return false;
         };
 
@@ -73,55 +102,63 @@
           document.getElementById('submit').disabled = false;
           document.getElementById('reset').hidden = true;
           document.getElementById('game-status').textContent = 'Ready';
+          document.getElementById('coin-result-toolbar').textContent = 'Not started';
           document.body.classList.remove('game-started');
+          if (isMobileSetup()) {
+            setSetupOpen(true);
+          }
         };
       }
     </script>
   </head>
   <body data-production-theme="white">
     <main class="terminal-window">
-      <div class="terminal-bar" aria-hidden="true">
-        <span>user@connect-four:/wasm/game</span>
-      </div>
-
       <div class="app-shell">
         <section class="setup-panel" aria-label="Game setup">
-          <div class="brand-lockup">
-            <pre aria-label="Connect Four title">CONNECT_FOUR</pre>
-            <p><span class="prompt">$</span> cargo run --release --target wasm32</p>
-          </div>
-
           <form onsubmit="event.preventDefault()" class="setup-form">
-            <label id="theme-field" class="field" hidden>
-              <span>bundle</span>
-              <select name="theme" onchange="setTheme(this.value)">
-                <option value="white">White README</option>
-                <option value="terminal">Terminal</option>
-              </select>
-            </label>
+            <button
+              id="setup-toggle"
+              class="setup-toggle"
+              type="button"
+              aria-expanded="true"
+              onclick="toggleSetup()"
+            >
+              <span class="setup-toggle-arrow" aria-hidden="true">↓</span>
+              <span>setup</span>
+            </button>
 
-            <label class="field">
-              <span>--ai-level</span>
-              <select name="difficulty">
-                <option value="VeryEasy">Very Easy</option>
-                <option value="Easy">Easy</option>
-                <option value="Medium" selected>Medium</option>
-                <option value="Hard">Hard</option>
-                <option value="VeryHard">Very Hard</option>
-                <option value="Extreme">Extreme</option>
-              </select>
-            </label>
+            <div class="setup-fields">
+              <label id="theme-field" class="field" hidden>
+                <span>bundle</span>
+                <select name="theme" onchange="setTheme(this.value)">
+                  <option value="white">White README</option>
+                  <option value="terminal">Terminal</option>
+                </select>
+              </label>
 
-            <label class="field">
-              <span>--columns</span>
-              <input type="number" name="numberOfColumns" onchange="initializeColumnHeights(this.value)" min="6" max="11" value="7" />
-            </label>
+              <label class="field">
+                <span>--ai-level</span>
+                <select name="difficulty">
+                  <option value="VeryEasy">Very Easy</option>
+                  <option value="Easy">Easy</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Hard">Hard</option>
+                  <option value="VeryHard">Very Hard</option>
+                  <option value="Extreme">Extreme</option>
+                </select>
+              </label>
 
-            <div id="column-heights-container" class="field-group" style="display: none">
-              <div class="field-group-heading">
-                <span>--column-heights</span>
+              <label class="field">
+                <span>--columns</span>
+                <input type="number" name="numberOfColumns" onchange="initializeColumnHeights(this.value)" min="6" max="11" value="7" />
+              </label>
+
+              <div id="column-heights-container" class="field-group" style="display: none">
+                <div class="field-group-heading">
+                  <span>--column-heights</span>
+                </div>
+                <div id="column-heights" class="height-grid"></div>
               </div>
-              <div id="column-heights" class="height-grid"></div>
             </div>
 
             <div class="actions">
@@ -133,7 +170,8 @@
 
         <section class="board-panel" aria-label="Connect Four board">
           <div class="board-toolbar">
-            <span><span class="prompt">$</span> status: <b id="game-status">Ready</b></span>
+            <span class="toolbar-status"><span class="prompt">$</span> <b id="game-status">Ready</b><span class="mobile-status-extra"> | <b id="coin-result-toolbar">Not started</b></span></span>
+            <span class="toolbar-title">connect-four</span>
             <span class="player-key"><b></b> player <i></i> cpu</span>
           </div>
           <div id="game-area" class="board-stage"></div>

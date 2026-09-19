@@ -1,4 +1,4 @@
-use crate::constants::{ASCII_UPPERCASE, CELL_HEIGHT, CELL_PADDING, CELL_WIDTH, PADDING};
+use crate::constants::{CELL_HEIGHT, CELL_PADDING, CELL_WIDTH, PADDING};
 use crate::models::{ConnectFourBoard, ConnectFourMove, Player};
 use web_sys::CanvasRenderingContext2d;
 use web_sys::wasm_bindgen::JsValue;
@@ -123,17 +123,6 @@ impl Drawer<CanvasRenderingContext2d> for ConnectFourBoard {
                     _ => (), //println!(""),
                 };
             }
-            let label = theme_color("--canvas-label", "#1cba22");
-            canvas.set_fill_style_str(&label);
-            canvas.set_font("25px monospace");
-            canvas
-                .fill_text(
-                    &ASCII_UPPERCASE[x].to_string(),
-                    CELL_WIDTH as f64 / 2f64 + (x * CELL_WIDTH) as f64,
-                    ((self.height + 1) * CELL_HEIGHT) as f64,
-                )
-                .unwrap();
-            // canvas.fill_text(&ASCII_UPPERCASE[x].to_string(), CELL_PADDING +  CELL_WIDTH as f64 / 2f64 + (x * CELL_WIDTH) as f64, ((self.height + 1) * CELL_HEIGHT) as f64, None);
         }
     }
 

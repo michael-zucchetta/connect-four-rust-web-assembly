@@ -1,9 +1,7 @@
 extern crate rand;
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use rand::RngCore;
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use rand::rngs::EntropyRng;
+use rand::RngExt;
 
 fn available_moves_indexes(moves_sizes: &Vec<usize>) -> Vec<usize> {
     moves_sizes
@@ -23,9 +21,8 @@ fn generate_random_value(start_value: u32, final_value: u32) -> usize {
 
     #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
     {
-        let mut rng = EntropyRng::new(); //tmp
-        let value = rng.next_u32();
-        ((value % final_value) + start_value) as usize
+        let mut rng = rand::rng();
+        rng.random_range(start_value..start_value + final_value) as usize
     }
 }
 

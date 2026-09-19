@@ -54,35 +54,33 @@ impl game::ConnectFourGame for ConsoleConnectFourGame {
         moves_left: Vec<usize>,
         game_turn: models::Player,
     ) -> () {
-        let mut command_as_text = String::new();
-        println!("Selecting move");
-        io::stdin()
-            .read_line(&mut command_as_text)
-            .expect("failed to read from stdin");
-        println!("Selecting move");
-        match utils::parse_and_return_value(&command_as_text, moves_left.len()) {
-            Some(chosen_move) => {
-                let game_mode = *self.game_mode();
-                if self
-                    .game_board()
-                    .make_move(models::player_move(game_turn.clone()), chosen_move)
-                {
-                    self.draw();
-                    thread::sleep(time::Duration::from_millis(100));
-                    self.execute_human_move(
-                        0usize,
-                        moves_left,
-                        game_modes::get_opposite_from_turn(game_turn, game_mode),
-                    );
-                } else {
-                    self.execute_human_move(0usize, moves_left, game_turn);
+        loop {
+            let mut command_as_text = String::new();
+            println!("Selecting move");
+            io::stdin()
+                .read_line(&mut command_as_text)
+                .expect("failed to read from stdin");
+            match utils::parse_and_return_value(&command_as_text, moves_left.len()) {
+                Some(chosen_move) => {
+                    if self
+                        .game_board()
+                        .make_move(models::player_move(game_turn.clone()), chosen_move)
+                    {
+                        self.draw();
+                        thread::sleep(time::Duration::from_millis(100));
+                        break;
+                    } else {
+                        println!(
+                            "Column {} is full; choose another column",
+                            command_as_text.trim()
+                        );
+                    }
+                }
+                _ => {
+                    println!("Key {} not valid", &command_as_text);
                 }
             }
-            _ => {
-                println!("Key {} not valid", &command_as_text);
-                self.execute_human_move(0usize, moves_left, game_turn);
-            }
-        };
+        }
     }
 
     fn level_ai1(&self) -> game_modes::AILevel {
