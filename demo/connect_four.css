@@ -192,6 +192,20 @@ select {
   color: var(--amber);
 }
 
+.repository-link {
+  width: fit-content;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.repository-link:hover,
+.repository-link:focus-visible {
+  color: var(--cyan);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .board-toolbar {
   position: relative;
   min-width: 0;
@@ -415,6 +429,7 @@ canvas {
   }
 
   .setup-form {
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
   }
 
@@ -440,6 +455,18 @@ canvas {
     display: inline-block;
     width: 1.2em;
     color: var(--green);
+  }
+
+  .setup-fields,
+  .actions {
+    grid-column: 1 / -1;
+  }
+
+  .repository-link {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    justify-self: end;
   }
 
   .setup-closed .setup-fields {
