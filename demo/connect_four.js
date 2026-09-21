@@ -11,6 +11,10 @@ export function create_game(column_sizes, game_mode) {
     const len1 = WASM_VECTOR_LEN;
     wasm.create_game(ptr0, len0, ptr1, len1);
 }
+
+export function reset_game() {
+    wasm.reset_game();
+}
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
@@ -44,6 +48,9 @@ function __wbg_get_imports() {
         __wbg_body_7d83a19bffb260db: function(arg0) {
             const ret = arg0.body;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_clearInterval_d8d44413537029f6: function(arg0, arg1) {
+            arg0.clearInterval(arg1);
         },
         __wbg_clearRect_60e914c5e35403c7: function(arg0, arg1, arg2, arg3, arg4) {
             arg0.clearRect(arg1, arg2, arg3, arg4);
@@ -278,12 +285,12 @@ function __wbg_get_imports() {
             return ret;
         },
         __wbindgen_generic_0000000000000001: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [NamedExternref("MouseEvent")], shim_idx: 45, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [NamedExternref("MouseEvent")], shim_idx: 22, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__he4a9fe1e014d5729);
             return ret;
         },
         __wbindgen_generic_0000000000000002: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [], shim_idx: 43, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [], shim_idx: 20, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__h11f19fc9ceb94037);
             return ret;
         },

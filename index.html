@@ -6,7 +6,7 @@
     <link href="./demo/connect_four.css" rel="stylesheet"/>
     <link id="theme-bundle" href="./demo/connect_four.terminal.css" rel="stylesheet"/>
     <script type="module">
-      import init, { create_game } from './demo/connect_four.js';
+      import init, { create_game, reset_game } from './demo/connect_four.js';
 
       const themeBundles = {
         white: './demo/connect_four.white.css',
@@ -86,6 +86,7 @@
           let columnLengths = Uint32Array.from(
             Array.from( document.getElementsByName('column-length') ).map( (columnInputLength) => parseInt( columnInputLength.value) )
           );
+          reset_game();
           document.getElementById('game-area').innerHTML = '';
           create_game(columnLengths, difficulty);
           document.getElementById('submit').disabled = true;
@@ -98,11 +99,13 @@
         };
 
         window.resetGame = () => {
+          reset_game();
           document.getElementById('game-area').innerHTML = '';
           document.getElementById('submit').disabled = false;
           document.getElementById('reset').hidden = true;
           document.getElementById('game-status').textContent = 'Ready';
           document.getElementById('coin-result-toolbar').textContent = 'Not started';
+          document.getElementById('game-timer').textContent = 'Time: 0 seconds';
           document.body.classList.remove('game-started');
           if (isMobileSetup()) {
             setSetupOpen(true);
@@ -141,10 +144,10 @@
                 <select name="difficulty">
                   <option value="VeryEasy">Very Easy</option>
                   <option value="Easy">Easy</option>
-                  <option value="Medium" selected>Medium</option>
-                  <option value="Hard">Hard</option>
-                  <option value="VeryHard">Very Hard</option>
-                  <option value="Extreme">Extreme</option>
+                  <option value="Medium" selected>Normal</option>
+                  <option value="minmax-hard">Hard (minmax)</option>
+                  <option value="minmax-very-hard">Very Hard (minmax)</option>
+                  <option value="minmax-extreme">Extreme (minmax)</option>
                 </select>
               </label>
 

@@ -59,7 +59,7 @@ fn set_game_status(message: &str) -> () {
 
 fn set_timer_text(seconds: u64) {
     if let Ok(Some(timer_element)) = get_document().query_selector("#game-timer") {
-        timer_element.set_text_content(Some(&format!("Time: {} seconds", seconds)));
+        timer_element.set_text_content(Some(&crate::utils::timer_text(seconds)));
     }
 }
 
@@ -359,9 +359,21 @@ fn append_coin_toss(container: &HtmlElement, player_starts: bool) -> () {
  * Its use will (maybe) be replaced by a worker with Yew
  */
 static mut IS_GAME_ACTIVE: bool = true;
+static mut ACTIVE_TIMER_HANDLE: Option<i32> = None;
 
 const AI_DELAY_MS: i32 = 650;
 const DROP_ANIMATION_MS: i32 = 240;
+
+pub fn reset_active_game() {
+    unsafe {
+        IS_GAME_ACTIVE = false;
+        let active_timer_handle = ACTIVE_TIMER_HANDLE;
+        ACTIVE_TIMER_HANDLE = None;
+        if let Some(handle) = active_timer_handle {
+            web_sys::window().unwrap().clear_interval_with_handle(handle);
+        }
+    }
+}
 
 #[derive(Clone, Copy)]
 enum AfterMove {
@@ -434,6 +446,7 @@ impl WebConnectFourGame {
         level_ai1_opt: Option<game_modes::AILevel>,
         player_starts: bool,
     ) -> Self {
+        reset_active_game();
         unsafe {
             IS_GAME_ACTIVE = player_starts;
         }
@@ -457,13 +470,16 @@ impl WebConnectFourGame {
                 ((js_sys::Date::now() - timer_start) / 1000.0).floor() as u64;
             set_timer_text(elapsed_seconds);
         });
-        web_sys::window()
+        let timer_handle = web_sys::window()
             .unwrap()
             .set_interval_with_callback_and_timeout_and_arguments_0(
                 timer.as_ref().unchecked_ref(),
                 1000,
             )
             .unwrap();
+        unsafe {
+            ACTIVE_TIMER_HANDLE = Some(timer_handle);
+        }
         timer.forget();
 
         web_connected_four_game.draw();
@@ -678,9 +694,7 @@ impl WebConnectFourGame {
             }
 
             if game.game_board.moves_left() == 0 {
-                unsafe {
-                    IS_GAME_ACTIVE = false;
-                }
+                reset_active_game();
                 set_game_status("Draw");
                 return;
             }
@@ -731,9 +745,10 @@ impl WebConnectFourGame {
         let elapsed_seconds =
             ((js_sys::Date::now() - self.started_at_ms) / 1000.0).floor() as u64;
         format!(
-            "{} in {} seconds",
+            "{} in {} seconds on {} difficulty",
             player_winner_text(player),
-            elapsed_seconds
+            elapsed_seconds,
+            game_modes::ai_level_label(self.level_ai2),
         )
     }
 }
@@ -778,9 +793,7 @@ impl game::ConnectFourGame for WebConnectFourGame {
         }
 
         if self.game_board.moves_left() == 0 {
-            unsafe {
-                IS_GAME_ACTIVE = false;
-            }
+            reset_active_game();
             return;
         }
 
@@ -808,9 +821,7 @@ impl game::ConnectFourGame for WebConnectFourGame {
                 IS_GAME_ACTIVE = true;
             }
         } else {
-            unsafe {
-                IS_GAME_ACTIVE = false;
-            }
+            reset_active_game();
         }
     }
 
@@ -833,6 +844,7 @@ impl game::ConnectFourGame for WebConnectFourGame {
         player: models::Player,
         winning_sequence: Vec<(usize, usize)>,
     ) -> () {
+        reset_active_game();
         let status = self.winner_status(player);
         set_game_status(&status);
         launch_fireworks();
