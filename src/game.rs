@@ -1,4 +1,5 @@
 use crate::game_modes;
+use crate::minmax;
 use crate::models;
 use crate::montecarlo;
 
@@ -69,6 +70,10 @@ pub trait ConnectFourGame {
             models::Player::AIPlayer2 => self.level_ai2(),
             _ => panic!("This should not happen"),
         };
+        if let Some(depth) = game_modes::minmax_depth(level_ai) {
+            return minmax::next_move(self.game_board(), models::player_move(ai_turn_type), depth);
+        }
+
         let empty_moves_by_column = self.game_board().empty_moves_by_column();
         let columns_size = empty_moves_by_column.len();
 

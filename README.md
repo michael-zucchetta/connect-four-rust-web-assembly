@@ -8,7 +8,7 @@ A screenshot of the game:
 
 ## Intro
 
-I implemented this as an exercise to learn Rust and WebAssembly's world. The game AI is built with the Montecarlo method and the difficulty is determined by the number of moves for which the Montecarlo method is applied (the harder the difficulty, the slower the game is going to be).
+I implemented this as an exercise to learn Rust and WebAssembly's world. The AI levels use Monte Carlo random plays to make a choice, while the `Minmax` levels use depth-limited adversarial search. Higher Minmax levels search more turns ahead and can take longer to choose a move.
 
 ## Getting Started
 

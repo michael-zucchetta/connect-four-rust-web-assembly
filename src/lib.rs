@@ -13,6 +13,7 @@ pub mod constants;
 pub mod drawer;
 pub mod game;
 pub mod game_modes;
+pub mod minmax;
 pub mod montecarlo;
 pub mod utils;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
@@ -33,4 +34,10 @@ pub fn create_game(column_sizes: Vec<u32>, game_mode: String) -> () {
         None,
         player_starts,
     );
+}
+
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[wasm_bindgen]
+pub fn reset_game() {
+    web::reset_active_game();
 }

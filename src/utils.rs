@@ -19,3 +19,18 @@ pub fn parse_and_return_value(key_value: &str, size: usize) -> Option<usize> {
         Some(_) => None,
     }
 }
+
+pub fn timer_text(seconds: u64) -> String {
+    format!("Time: {} seconds", seconds)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn formats_reset_and_elapsed_timer_values() {
+        assert_eq!(timer_text(0), "Time: 0 seconds");
+        assert_eq!(timer_text(42), "Time: 42 seconds");
+    }
+}
