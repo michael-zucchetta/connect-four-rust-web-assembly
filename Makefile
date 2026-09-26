@@ -1,5 +1,5 @@
 
-.PHONY: build-local build-web build-production build-production-terminal copy-production-artifacts serve-web run run-console
+.PHONY: build-local build-web build-production build-production-terminal copy-production-artifacts serve-web run run-console capture-readme-screenshot build-full
 
 build-local:
 	cargo fix --lib -p connect_four --allow-dirty
@@ -21,6 +21,11 @@ build-production-terminal:
 	RUSTFLAGS="-C opt-level=3" wasm-pack build --release --target web --out-dir pkg
 	$(MAKE) copy-production-artifacts
 	sed -i 's/data-production-theme="[^"]*"/data-production-theme="terminal"/' index.html
+
+capture-readme-screenshot:
+	python3 scripts/capture-readme-screenshot.py
+
+build-full: build-production-terminal capture-readme-screenshot
 
 serve-web:
 	python3 -m http.server 8000
