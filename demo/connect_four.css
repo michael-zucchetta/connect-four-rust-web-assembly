@@ -227,15 +227,18 @@ body.embedded-game .terminal-window {
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 0.75fr);
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: 10px;
-  padding: 0 14px;
+  gap: 4px 10px;
+  padding: 4px 14px;
   border-bottom: 1px solid var(--line);
   background: #000;
   color: var(--text);
 }
 
 .toolbar-command {
+  grid-column: 1;
+  grid-row: 1;
   min-width: 0;
   overflow-wrap: anywhere;
   white-space: nowrap;
@@ -251,16 +254,23 @@ body.embedded-game .terminal-window {
   text-align: center;
 }
 
-.board-toolbar > .toolbar-status:first-of-type {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 34%;
+.board-toolbar > .toolbar-status:not(#game-timer) {
+  position: static;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: stretch;
+  width: 100%;
+  max-width: none;
+  transform: none;
+  text-align: center;
 }
 
 .board-toolbar b {
   font-weight: 400;
+}
+
+.board-toolbar .toolbar-command b {
+  font-weight: 700;
 }
 
 .mobile-status-extra {
@@ -277,11 +287,16 @@ body.embedded-game .terminal-window {
 }
 
 #game-timer {
+  grid-column: 3;
+  grid-row: 1;
   justify-self: end;
   white-space: nowrap;
 }
 
 .player-key {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
   display: inline-flex;
   flex: none;
   align-items: center;
@@ -467,7 +482,7 @@ canvas {
   }
 
   .setup-panel {
-    max-height: 34%;
+    max-height: min(34vh, 240px);
     overflow: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
@@ -545,7 +560,7 @@ canvas {
   }
 
   .board-toolbar {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     gap: 4px 8px;
     padding: 6px 10px;
@@ -558,6 +573,7 @@ canvas {
   #game-timer {
     position: static;
     grid-column: 1 / -1;
+    grid-row: 3;
     justify-self: center;
   }
 
@@ -566,17 +582,22 @@ canvas {
   }
 
   .toolbar-command {
-    grid-column: 1;
+    grid-column: 1 / -1;
     grid-row: 1;
-  font-size: 0.65rem;
+    font-size: 0.65rem;
   }
 
-  .board-toolbar > .toolbar-status:first-of-type {
-    left: 50%;
-    top: 6px;
-    width: max-content;
-    max-width: 32%;
-    transform: translateX(-50%);
+  .toolbar-command b {
+    font-weight: 700;
+  }
+
+  .board-toolbar > .toolbar-status:not(#game-timer) {
+    position: static;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: auto;
+    max-width: none;
+    transform: none;
     text-align: center;
   }
 
