@@ -162,6 +162,10 @@ body.embedded-game .repository-link {
   font-size: 0.82rem;
 }
 
+body.embedded-game .repository-link-mobile {
+  display: none;
+}
+
 body.embedded-game .repository-link:hover,
 body.embedded-game .repository-link:focus-visible {
   color: var(--cyan);
@@ -379,12 +383,15 @@ body.embedded-game .mobile-status-extra { display: none; }
   }
 
   body.embedded-game .setup-form {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto auto;
     gap: 6px 10px;
   }
 
   body.embedded-game .setup-toggle {
     display: inline-flex;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
     align-items: center;
     gap: 8px;
     min-height: 30px;
@@ -392,6 +399,11 @@ body.embedded-game .mobile-status-extra { display: none; }
     border: 0;
     color: var(--amber);
     background: transparent;
+  }
+
+  body.embedded-game .actions {
+    align-items: center;
+    justify-content: space-between;
   }
 
   body.embedded-game .setup-fields,
@@ -405,12 +417,17 @@ body.embedded-game .mobile-status-extra { display: none; }
     display: none;
   }
 
-  body.embedded-game .repository-link {
-    grid-column: 2;
-    grid-row: 1;
+  body.embedded-game .repository-link:not(.repository-link-mobile) {
+    display: none;
+  }
+
+  body.embedded-game .repository-link-mobile {
+    display: inline;
+    flex: 0 0 auto;
     justify-self: end;
     align-self: center;
-    margin-right: 8px;
+    margin: 0;
+    text-align: right;
   }
 
   body.embedded-game .board-toolbar {
