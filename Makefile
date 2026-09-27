@@ -1,5 +1,5 @@
 
-.PHONY: build-local build-web build-production build-production-white build-production-terminal copy-production-artifacts serve-web run run-console capture-readme-screenshot build-full
+.PHONY: build-local build-web build-production build-production-white build-production-terminal copy-production-artifacts serve run run-console capture-readme-screenshot build-full
 
 build-local:
 	cargo fix --lib -p connect_four --allow-dirty
@@ -29,7 +29,7 @@ capture-readme-screenshot:
 
 build-full: build-production-terminal capture-readme-screenshot
 
-serve-web:
+serve:
 	python3 -m http.server 8000
 
 run:
