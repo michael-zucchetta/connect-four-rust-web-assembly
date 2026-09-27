@@ -177,11 +177,11 @@ body.embedded-game .board-panel {
 }
 
 body.embedded-game .board-toolbar {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
   align-items: center;
-  gap: 8px 20px;
+  gap: 4px 20px;
   min-width: 0;
   min-height: 62px;
   padding: 10px 18px;
@@ -204,12 +204,29 @@ body.embedded-game .toolbar-status {
 }
 
 body.embedded-game .board-toolbar > .toolbar-status:not(#game-timer) {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: max-content;
-  transform: translate(-50%, -50%);
+  grid-column: 1 / -1;
+  grid-row: 3;
   font-weight: 700;
+}
+
+body.embedded-game #game-timer {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  text-align: right;
+}
+
+body.embedded-game .toolbar-command {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+body.embedded-game .player-key {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
 }
 
 body.embedded-game .player-key {
@@ -441,18 +458,15 @@ body.embedded-game .mobile-status-extra { display: none; }
   }
 
   body.embedded-game .board-toolbar {
-    grid-template-columns: 1fr;
-    gap: 3px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 3px 8px;
     padding: 5px 8px;
-    text-align: center;
-    flex-direction: column;
   }
 
   body.embedded-game .toolbar-command,
   body.embedded-game .board-toolbar > .toolbar-status:not(#game-timer) {
     position: static;
-    grid-column: 1;
-    grid-row: auto;
     width: auto;
     transform: none;
     font-size: 11px;
@@ -460,25 +474,34 @@ body.embedded-game .mobile-status-extra { display: none; }
   }
 
   body.embedded-game .toolbar-command {
-    align-self: flex-start;
+    grid-column: 1 / -1;
+    grid-row: 1;
     text-align: left;
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+
+  body.embedded-game .board-toolbar > .toolbar-status:not(#game-timer) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    text-align: center;
   }
 
   body.embedded-game #game-timer {
-    grid-column: 1;
-    grid-row: auto;
-    justify-self: center;
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    text-align: right;
   }
 
   body.embedded-game .player-key {
     display: flex;
-    order: 3;
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
     font-size: 10px;
   }
-
-  body.embedded-game #game-timer { order: 2; }
   body.embedded-game .toolbar-status:not(#game-timer) {
-    flex: 0 0 auto;
     line-height: 1.35;
   }
 
