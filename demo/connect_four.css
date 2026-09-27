@@ -245,10 +245,10 @@ body.embedded-game #game-timer {
 
 body.embedded-game .board-stage {
   display: grid;
-  place-items: center;
+  place-items: start center;
   min-width: 0;
   min-height: 0;
-  padding: clamp(12px, 3vw, 48px);
+  padding: clamp(6px, 1.5vw, 20px);
   overflow: auto;
   background: var(--bg);
 }
@@ -257,6 +257,7 @@ body.embedded-game #canvas-container {
   position: relative;
   max-width: 100%;
   max-height: 100%;
+  outline: none;
 }
 
 body.embedded-game #canvas-container canvas {
@@ -264,7 +265,8 @@ body.embedded-game #canvas-container canvas {
   max-width: min(100%, 1100px);
   max-height: 100%;
   height: auto;
-  border: 1px solid var(--line);
+  border: 2px solid var(--canvas-grid);
+  border-radius: 12px;
   background: var(--bg);
   cursor: pointer;
 }
@@ -352,15 +354,16 @@ body.embedded-game .mobile-status-extra { display: none; }
   }
 
   body.embedded-game .setup-panel {
-    max-height: min(34vh, 240px);
-    padding: 10px 16px;
+    max-height: none;
+    padding: 8px 12px;
+    overflow: visible;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
 
   body.embedded-game .setup-form {
     grid-template-columns: 1fr auto;
-    gap: 8px 14px;
+    gap: 6px 10px;
   }
 
   body.embedded-game .setup-toggle {
@@ -378,7 +381,7 @@ body.embedded-game .mobile-status-extra { display: none; }
   body.embedded-game .actions {
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 14px;
+    gap: 6px 10px;
   }
 
   body.embedded-game.setup-closed .setup-fields {
@@ -390,6 +393,7 @@ body.embedded-game .mobile-status-extra { display: none; }
     grid-row: 1;
     justify-self: end;
     align-self: center;
+    margin-right: 8px;
   }
 
   body.embedded-game .board-toolbar {
@@ -412,11 +416,28 @@ body.embedded-game .mobile-status-extra { display: none; }
   }
 
   body.embedded-game .height-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
   }
 
   body.embedded-game .height-field {
-    grid-template-columns: 1fr;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  body.embedded-game .height-field span {
+    width: 18px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  body.embedded-game .height-field input {
+    min-height: 30px;
+    padding: 0 5px;
+  }
+
+  body.embedded-game #column-heights-container {
+    grid-column: 1 / -1;
   }
 
   body.embedded-game .board-toolbar {
@@ -449,8 +470,22 @@ body.embedded-game .mobile-status-extra { display: none; }
     justify-self: center;
   }
 
-  body.embedded-game .player-key { display: none; }
-  body.embedded-game .mobile-status-extra { display: inline; }
+  body.embedded-game .player-key {
+    display: flex;
+    order: 3;
+    font-size: 10px;
+  }
+
+  body.embedded-game #game-timer { order: 2; }
+  body.embedded-game .toolbar-status:not(#game-timer) {
+    flex: 0 0 auto;
+    line-height: 1.35;
+  }
+
+  body.embedded-game .mobile-status-extra {
+    display: inline !important;
+    color: var(--amber);
+  }
 
   body.embedded-game .status-strip {
     justify-content: center;

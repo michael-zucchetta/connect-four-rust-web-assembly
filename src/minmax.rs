@@ -78,7 +78,7 @@ fn opposite_move(move_type: ConnectFourMove) -> ConnectFourMove {
     match move_type {
         ConnectFourMove::XPosition => ConnectFourMove::OPosition,
         ConnectFourMove::OPosition => ConnectFourMove::XPosition,
-        _ => panic!("Minmax can only play normal pieces"),
+        _ => panic!("Minimax can only play normal pieces"),
     }
 }
 

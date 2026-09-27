@@ -8,7 +8,7 @@ A screenshot of the game:
 
 ## Intro
 
-I implemented this as an exercise to learn Rust and WebAssembly's world. The AI levels use Monte Carlo random plays to make a choice, while the `Minmax` levels use depth-limited adversarial search. Higher Minmax levels search more turns ahead and can take longer to choose a move.
+I implemented this as an exercise to learn Rust and WebAssembly's world. The AI levels use Monte Carlo random plays to make a choice, while the `Minimax` levels use depth-limited adversarial search. Higher Minimax levels search more turns ahead and can take longer to choose a move.
 
 ## Getting Started
 
