@@ -71,7 +71,10 @@
       window.onload = async () => {
         const requestedTheme = new URLSearchParams(window.location.search).get('theme');
         const productionTheme = document.body.dataset.productionTheme;
-        setTheme(requestedTheme || localStorage.getItem('connect-four-theme') || productionTheme || 'white');
+        const savedTheme = localStorage.getItem('connect-four-theme');
+        const initialTheme = [requestedTheme, productionTheme, savedTheme]
+          .find(theme => themeBundles[theme]) || 'white';
+        setTheme(initialTheme);
         if (showThemeSelector) {
           document.getElementById('theme-field').hidden = false;
         }

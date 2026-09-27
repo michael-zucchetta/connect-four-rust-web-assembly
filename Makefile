@@ -1,5 +1,5 @@
 
-.PHONY: build-local build-web build-production build-production-terminal copy-production-artifacts serve-web run run-console capture-readme-screenshot build-full
+.PHONY: build-local build-web build-production build-production-white build-production-terminal copy-production-artifacts serve-web run run-console capture-readme-screenshot build-full
 
 build-local:
 	cargo fix --lib -p connect_four --allow-dirty
@@ -12,7 +12,9 @@ copy-production-artifacts:
 	cp pkg/connect_four_bg.wasm demo/connect_four_bg.wasm
 	cp pkg/connect_four_bg.wasm demo/connect_four.wasm
 
-build-production:
+build-production: build-production-white
+
+build-production-white:
 	RUSTFLAGS="-C opt-level=3" wasm-pack build --release --target web --out-dir pkg
 	$(MAKE) copy-production-artifacts
 	sed -i 's/data-production-theme="[^"]*"/data-production-theme="white"/' index.html
