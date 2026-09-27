@@ -20,6 +20,13 @@ pub fn get_document() -> Document {
     return document;
 }
 
+fn canvas_pixel_ratio() -> f64 {
+    web_sys::window()
+        .map(|window| window.device_pixel_ratio())
+        .unwrap_or(1.0)
+        .max(2.0)
+}
+
 pub fn append_div() -> HtmlElement {
     let document: Document = get_document();
     let container: Element = document
@@ -404,13 +411,18 @@ fn create_canvas(
     // canvas.set_width(1024u32);
     // canvas.set_height(768u32);
 
-    canvas.set_width(
-        ((constants::PADDING * 2f64) as usize + constants::CELL_WIDTH * column_sizes.len()) as u32,
-    );
-    canvas.set_height(
-        (constants::PADDING * 2f64) as u32
-            + constants::CELL_HEIGHT as u32 * column_sizes.iter().max().unwrap(),
-    );
+    let logical_width =
+        ((constants::PADDING * 2f64) as usize + constants::CELL_WIDTH * column_sizes.len()) as u32;
+    let logical_height = (constants::PADDING * 2f64) as u32
+        + constants::CELL_HEIGHT as u32 * column_sizes.iter().max().unwrap();
+    let pixel_ratio = canvas_pixel_ratio();
+    canvas.set_width((logical_width as f64 * pixel_ratio).round() as u32);
+    canvas.set_height((logical_height as f64 * pixel_ratio).round() as u32);
+    canvas
+        .style()
+        .set_property("width", &format!("{logical_width}px"))
+        .unwrap();
+    canvas.style().set_property("height", "auto").unwrap();
     canvas
 }
 
@@ -505,7 +517,7 @@ impl WebConnectFourGame {
                     let canvas_bounds = canvas_element.get_bounding_client_rect();
                     let click_x = if canvas_bounds.width() > 0f64 {
                         (event.client_x() as f64 - canvas_bounds.left())
-                            * game_cloned.canvas.width() as f64
+                            * (game_cloned.canvas.width() as f64 / canvas_pixel_ratio())
                             / canvas_bounds.width()
                     } else {
                         event.offset_x() as f64
@@ -574,18 +586,22 @@ impl WebConnectFourGame {
         disc.set_class_name(class_name);
 
         let radius = f64::from(constants::CELL_WIDTH as i32) / 1.7f64 - 10f64;
-        let center_x = constants::CELL_PADDING * 3.5f64
-            + f64::from(constants::CELL_WIDTH as i32) * column as f64;
-        let center_y = constants::CELL_PADDING * 3.5f64 + row as f64 * constants::CELL_HEIGHT as f64;
+        let center_x = constants::PADDING
+            + (column as f64 + 0.5) * constants::CELL_WIDTH as f64;
+        let center_y = constants::PADDING
+            + (row as f64 + 0.5) * constants::CELL_HEIGHT as f64;
         let canvas_bounds = canvas_element.get_bounding_client_rect();
         let container_bounds = canvas_container.get_bounding_client_rect();
-        let scale_x = if self.canvas.width() > 0 {
-            canvas_bounds.width() / self.canvas.width() as f64
+        let pixel_ratio = canvas_pixel_ratio();
+        let logical_width = self.canvas.width() as f64 / pixel_ratio;
+        let logical_height = self.canvas.height() as f64 / pixel_ratio;
+        let scale_x = if logical_width > 0.0 {
+            canvas_bounds.width() / logical_width
         } else {
             1f64
         };
-        let scale_y = if self.canvas.height() > 0 {
-            canvas_bounds.height() / self.canvas.height() as f64
+        let scale_y = if logical_height > 0.0 {
+            canvas_bounds.height() / logical_height
         } else {
             1f64
         };
@@ -826,14 +842,18 @@ impl game::ConnectFourGame for WebConnectFourGame {
     }
 
     fn draw(&mut self) -> () {
-        let width = self.canvas.width() as f64;
-        let height = self.canvas.height() as f64;
+        let pixel_ratio = canvas_pixel_ratio();
+        let width = self.canvas.width() as f64 / pixel_ratio;
+        let height = self.canvas.height() as f64 / pixel_ratio;
         let canvas_context: CanvasRenderingContext2d = self
             .canvas
             .get_context("2d")
             .unwrap()
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()
+            .unwrap();
+        canvas_context
+            .set_transform(pixel_ratio, 0.0, 0.0, pixel_ratio, 0.0, 0.0)
             .unwrap();
         // self.game_board().make_move(ConnectFourMove::OPosition, 0);
         self.game_board().draw(canvas_context, width, height);
@@ -854,6 +874,10 @@ impl game::ConnectFourGame for WebConnectFourGame {
             .unwrap()
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()
+            .unwrap();
+        let pixel_ratio = canvas_pixel_ratio();
+        canvas_context
+            .set_transform(pixel_ratio, 0.0, 0.0, pixel_ratio, 0.0, 0.0)
             .unwrap();
         self.game_board()
             .draw_endgame(canvas_context, player, winning_sequence);

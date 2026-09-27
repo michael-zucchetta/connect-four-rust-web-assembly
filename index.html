@@ -59,7 +59,7 @@
       }
 
       function syncSetupForViewport() {
-        setSetupOpen(!isMobileSetup());
+        setSetupOpen(!isMobileSetup() && !document.body.classList.contains('embedded-game'));
       }
 
       window.initializeColumnHeights = initializeColumnHeights;
@@ -71,7 +71,10 @@
       window.onload = async () => {
         const requestedTheme = new URLSearchParams(window.location.search).get('theme');
         const productionTheme = document.body.dataset.productionTheme;
-        setTheme(requestedTheme || localStorage.getItem('connect-four-theme') || productionTheme || 'white');
+        const savedTheme = localStorage.getItem('connect-four-theme');
+        const initialTheme = [requestedTheme, productionTheme, savedTheme]
+          .find(theme => themeBundles[theme]) || 'white';
+        setTheme(initialTheme);
         if (showThemeSelector) {
           document.getElementById('theme-field').hidden = false;
         }
@@ -89,6 +92,9 @@
           reset_game();
           document.getElementById('game-area').innerHTML = '';
           create_game(columnLengths, difficulty);
+          const difficultySelect = document.getElementsByName('difficulty')[0];
+          const difficultyLabel = difficultySelect.value;
+          document.getElementById('game-command').textContent = `./connect-four --ai-level ${difficultyLabel} --columns ${numberOfColumns}`;
           document.getElementById('submit').disabled = true;
           document.getElementById('reset').hidden = false;
           document.body.classList.add('game-started');
@@ -104,6 +110,7 @@
           document.getElementById('submit').disabled = false;
           document.getElementById('reset').hidden = true;
           document.getElementById('game-status').textContent = 'Ready';
+          document.getElementById('game-command').textContent = './connect-four';
           document.getElementById('coin-result-toolbar').textContent = 'Not started';
           document.getElementById('game-timer').textContent = 'Time: 0 seconds';
           document.body.classList.remove('game-started');
@@ -114,7 +121,7 @@
       }
     </script>
   </head>
-  <body data-production-theme="white">
+  <body data-production-theme="white" class="embedded-game">
     <main class="terminal-window">
       <div class="app-shell">
         <section class="setup-panel" aria-label="Game setup">
@@ -145,9 +152,9 @@
                   <option value="VeryEasy">Very Easy</option>
                   <option value="Easy">Easy</option>
                   <option value="Medium" selected>Normal</option>
-                  <option value="minmax-hard">Hard (minmax)</option>
-                  <option value="minmax-very-hard">Very Hard (minmax)</option>
-                  <option value="minmax-extreme">Extreme (minmax)</option>
+                  <option value="minimax-hard">Hard (Minimax)</option>
+                  <option value="minimax-very-hard">Very Hard (Minimax)</option>
+                  <option value="minimax-extreme">Extreme (Minimax)</option>
                 </select>
               </label>
 
@@ -181,9 +188,9 @@
 
         <section class="board-panel" aria-label="Connect Four board">
           <div class="board-toolbar">
-            <span class="toolbar-status"><span class="prompt">$</span> <b id="game-status">Ready</b><span class="mobile-status-extra"> | <b id="coin-result-toolbar">Not started</b></span></span>
+            <span class="toolbar-command"><span class="prompt">$</span> <b id="game-command">./connect-four</b></span>
+            <span class="toolbar-status"><b id="game-status">Ready</b><span class="mobile-status-extra"> | <b id="coin-result-toolbar">Not started</b></span></span>
             <span id="game-timer" class="toolbar-status">Time: 0 seconds</span>
-            <span class="toolbar-title">connect-four</span>
             <span class="player-key"><b></b> player <i></i> cpu</span>
           </div>
           <div id="game-area" class="board-stage"></div>

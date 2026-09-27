@@ -31,12 +31,24 @@ pub fn ai_level_from_str(s: &str) -> Option<AILevel> {
         "Hard" => Some(AILevel::Hard),
         "VeryHard" => Some(AILevel::VeryHard),
         "Extreme" => Some(AILevel::Extreme),
-        "minmax-very-easy" | "MinmaxVeryEasy" | "MinimaxVeryEasy" => Some(AILevel::MinmaxVeryEasy),
-        "minmax-easy" | "MinmaxEasy" | "MinimaxEasy" => Some(AILevel::MinmaxEasy),
-        "minmax-normal" | "MinmaxNormal" | "MinimaxNormal" => Some(AILevel::MinmaxNormal),
-        "minmax-hard" | "MinmaxHard" | "MinimaxHard" => Some(AILevel::MinmaxHard),
-        "minmax-very-hard" | "MinmaxVeryHard" | "MinimaxVeryHard" => Some(AILevel::MinmaxVeryHard),
-        "minmax-extreme" | "MinmaxExtreme" | "MinimaxExtreme" => Some(AILevel::MinmaxExtreme),
+        "minimax-very-easy" | "minmax-very-easy" | "MinimaxVeryEasy" | "MinmaxVeryEasy" => {
+            Some(AILevel::MinmaxVeryEasy)
+        }
+        "minimax-easy" | "minmax-easy" | "MinimaxEasy" | "MinmaxEasy" => {
+            Some(AILevel::MinmaxEasy)
+        }
+        "minimax-normal" | "minmax-normal" | "MinimaxNormal" | "MinmaxNormal" => {
+            Some(AILevel::MinmaxNormal)
+        }
+        "minimax-hard" | "minmax-hard" | "MinimaxHard" | "MinmaxHard" => {
+            Some(AILevel::MinmaxHard)
+        }
+        "minimax-very-hard" | "minmax-very-hard" | "MinimaxVeryHard" | "MinmaxVeryHard" => {
+            Some(AILevel::MinmaxVeryHard)
+        }
+        "minimax-extreme" | "minmax-extreme" | "MinimaxExtreme" | "MinmaxExtreme" => {
+            Some(AILevel::MinmaxExtreme)
+        }
         _ => None,
     }
 }
@@ -78,12 +90,12 @@ pub fn ai_level_label(ai_level: AILevel) -> &'static str {
         AILevel::Hard => "Hard",
         AILevel::VeryHard => "Very Hard",
         AILevel::Extreme => "Extreme",
-        AILevel::MinmaxVeryEasy => "Minmax Very Easy",
-        AILevel::MinmaxEasy => "Minmax Easy",
-        AILevel::MinmaxNormal => "Minmax Normal",
-        AILevel::MinmaxHard => "Minmax Hard",
-        AILevel::MinmaxVeryHard => "Minmax Very Hard",
-        AILevel::MinmaxExtreme => "Minmax Extreme",
+        AILevel::MinmaxVeryEasy => "Minimax Very Easy",
+        AILevel::MinmaxEasy => "Minimax Easy",
+        AILevel::MinmaxNormal => "Minimax Normal",
+        AILevel::MinmaxHard => "Minimax Hard",
+        AILevel::MinmaxVeryHard => "Minimax Very Hard",
+        AILevel::MinmaxExtreme => "Minimax Extreme",
     }
 }
 
@@ -92,14 +104,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_minmax_levels_and_assigns_depths() {
+    fn parses_minimax_levels_and_assigns_depths() {
         assert_eq!(
             ai_level_from_str("minmax-normal"),
             Some(AILevel::MinmaxNormal)
         );
+        assert_eq!(
+            ai_level_from_str("minimax-normal"),
+            Some(AILevel::MinmaxNormal)
+        );
         assert_eq!(minmax_depth(AILevel::MinmaxNormal), Some(4));
         assert_eq!(ai_level_from_str("MinimaxEasy"), Some(AILevel::MinmaxEasy));
-        assert_eq!(ai_level_label(AILevel::MinmaxHard), "Minmax Hard");
+        assert_eq!(ai_level_label(AILevel::MinmaxHard), "Minimax Hard");
         assert_eq!(minmax_depth(AILevel::Extreme), None);
     }
 }
