@@ -20,7 +20,36 @@
         document.getElementById('column-heights').innerHTML = htmlCode;
       }
 
+      function setupDifficultyLabels() {
+        const difficultySelect = document.getElementsByName('difficulty')[0];
+        const restorePlainLabels = () => {
+          Array.from(difficultySelect.options).forEach(option => {
+            option.textContent = option.dataset.baseLabel;
+          });
+        };
+        const labelSelectedDifficulty = () => {
+          restorePlainLabels();
+          const selectedOption = difficultySelect.selectedOptions[0];
+          const algorithm = selectedOption.value.startsWith('montecarlo-') ? 'montecarlo' : 'minimax';
+          selectedOption.textContent = `${selectedOption.dataset.baseLabel} (${algorithm})`;
+        };
+
+        Array.from(difficultySelect.options).forEach(option => {
+          option.dataset.baseLabel = option.textContent;
+        });
+        difficultySelect.addEventListener('pointerdown', restorePlainLabels);
+        difficultySelect.addEventListener('keydown', event => {
+          if (['ArrowDown', 'ArrowUp', ' ', 'Enter'].includes(event.key)) {
+            restorePlainLabels();
+          }
+        });
+        difficultySelect.addEventListener('change', labelSelectedDifficulty);
+        difficultySelect.addEventListener('blur', labelSelectedDifficulty);
+        labelSelectedDifficulty();
+      }
+
       window.onload = () => {
+        setupDifficultyLabels();
         initializeColumnHeights( document.getElementsByName('numberOfColumns')[0].value );
         Rust.connect_four.then( ( connect_four) => {
           window.connect_four = connect_four;
@@ -42,12 +71,22 @@
       <form onsubmit="event.preventDefault()">
       <div> AI Level: 
         <select name="difficulty">
-          <option value="VeryEasy">Very Easy</option>
-          <option value="Easy">Easy</option>
-          <option value="Medium" selected>Normal</option>
-          <option value="minimax-hard">Hard (Minimax)</option>
-          <option value="minimax-very-hard">Very Hard (Minimax)</option>
-          <option value="minimax-extreme">Extreme (Minimax)</option>
+          <optgroup label="Monte Carlo">
+            <option value="montecarlo-very-easy">Very Easy</option>
+            <option value="montecarlo-easy">Easy</option>
+            <option value="montecarlo-medium" selected>Medium</option>
+            <option value="montecarlo-hard">Hard</option>
+            <option value="montecarlo-very-hard">Very Hard</option>
+            <option value="montecarlo-extreme">Extreme</option>
+          </optgroup>
+          <optgroup label="Minimax">
+            <option value="minimax-very-easy">Very Easy</option>
+            <option value="minimax-easy">Easy</option>
+            <option value="minimax-normal">Normal</option>
+            <option value="minimax-hard">Hard</option>
+            <option value="minimax-very-hard">Very Hard</option>
+            <option value="minimax-extreme">Extreme</option>
+          </optgroup>
         </select>
       </div>
       <div>Number of columns (from a minimum of 6 to a maximum of 11. Classic game has 7):

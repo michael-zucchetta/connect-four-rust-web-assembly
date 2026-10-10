@@ -25,12 +25,12 @@ pub enum AILevel {
 
 pub fn ai_level_from_str(s: &str) -> Option<AILevel> {
     match s {
-        "VeryEasy" => Some(AILevel::VeryEasy),
-        "Easy" => Some(AILevel::Easy),
-        "Medium" => Some(AILevel::Medium),
-        "Hard" => Some(AILevel::Hard),
-        "VeryHard" => Some(AILevel::VeryHard),
-        "Extreme" => Some(AILevel::Extreme),
+        "montecarlo-very-easy" | "VeryEasy" => Some(AILevel::VeryEasy),
+        "montecarlo-easy" | "Easy" => Some(AILevel::Easy),
+        "montecarlo-medium" | "Medium" => Some(AILevel::Medium),
+        "montecarlo-hard" | "Hard" => Some(AILevel::Hard),
+        "montecarlo-very-hard" | "VeryHard" => Some(AILevel::VeryHard),
+        "montecarlo-extreme" | "Extreme" => Some(AILevel::Extreme),
         "minimax-very-easy" | "minmax-very-easy" | "MinimaxVeryEasy" | "MinmaxVeryEasy" => {
             Some(AILevel::MinmaxVeryEasy)
         }
@@ -72,12 +72,12 @@ pub fn ai_moves(ai_level: AILevel) -> usize {
 
 pub fn minmax_depth(ai_level: AILevel) -> Option<usize> {
     match ai_level {
-        AILevel::MinmaxVeryEasy => Some(2),
-        AILevel::MinmaxEasy => Some(3),
-        AILevel::MinmaxNormal => Some(4),
-        AILevel::MinmaxHard => Some(5),
-        AILevel::MinmaxVeryHard => Some(6),
-        AILevel::MinmaxExtreme => Some(7),
+        AILevel::MinmaxVeryEasy => Some(1),
+        AILevel::MinmaxEasy => Some(2),
+        AILevel::MinmaxNormal => Some(3),
+        AILevel::MinmaxHard => Some(4),
+        AILevel::MinmaxVeryHard => Some(5),
+        AILevel::MinmaxExtreme => Some(6),
         _ => None,
     }
 }
@@ -113,7 +113,7 @@ mod tests {
             ai_level_from_str("minimax-normal"),
             Some(AILevel::MinmaxNormal)
         );
-        assert_eq!(minmax_depth(AILevel::MinmaxNormal), Some(4));
+        assert_eq!(minmax_depth(AILevel::MinmaxNormal), Some(3));
         assert_eq!(ai_level_from_str("MinimaxEasy"), Some(AILevel::MinmaxEasy));
         assert_eq!(ai_level_label(AILevel::MinmaxHard), "Minimax Hard");
         assert_eq!(minmax_depth(AILevel::Extreme), None);
