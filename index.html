@@ -97,6 +97,10 @@
       };
 
       window.onload = async () => {
+        const startButton = document.getElementById('submit');
+        const gameStatus = document.getElementById('game-status');
+        startButton.disabled = true;
+
         const requestedTheme = new URLSearchParams(window.location.search).get('theme');
         const productionTheme = document.body.dataset.productionTheme;
         const savedTheme = localStorage.getItem('connect-four-theme');
@@ -106,13 +110,10 @@
         if (showThemeSelector) {
           document.getElementById('theme-field').hidden = false;
         }
-        await init();
-        setupDifficultyLabels();
-        initializeColumnHeights( document.getElementsByName('numberOfColumns')[0].value );
-        syncSetupForViewport();
-        window.matchMedia('(max-width: 820px)').addEventListener('change', syncSetupForViewport);
-
         window.initializeGame = () => {
+          if (startButton.disabled) {
+            return false;
+          }
           let numberOfColumns = document.getElementsByName('numberOfColumns')[0].value;
           let difficulty  = document.getElementsByName('difficulty')[0].value;
           let columnLengths = Uint32Array.from(
@@ -147,6 +148,19 @@
             setSetupOpen(true);
           }
         };
+
+        try {
+          await init();
+          setupDifficultyLabels();
+          initializeColumnHeights(document.getElementsByName('numberOfColumns')[0].value);
+          syncSetupForViewport();
+          window.matchMedia('(max-width: 820px)').addEventListener('change', syncSetupForViewport);
+          startButton.disabled = false;
+        } catch (error) {
+          console.error('Could not load Connect Four WebAssembly:', error);
+          gameStatus.textContent = 'Load failed';
+          gameStatus.title = 'Reload the page to try loading the game again.';
+        }
       }
     </script>
   </head>
@@ -211,7 +225,7 @@
             </div>
 
             <div class="actions">
-              <button id="submit" type="button" onclick="initializeGame()">./start</button>
+              <button id="submit" type="button" onclick="initializeGame()" disabled>./start</button>
               <button id="reset" type="button" hidden onclick="resetGame()">reset</button>
               <a
                 class="repository-link repository-link-mobile"
