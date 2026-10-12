@@ -358,6 +358,25 @@ body.embedded-game .status-strip {
   white-space: nowrap;
 }
 
+/* Keep the board area full size while scaling only the canvas inside it. */
+@media (min-width: 821px) {
+  body.embedded-game .board-stage {
+    place-items: start center;
+  }
+
+  body.embedded-game #canvas-container {
+    width: 100%;
+    max-height: 100%;
+  }
+
+  body.embedded-game #canvas-container canvas {
+    width: min(85%, 900px) !important;
+    max-width: 100%;
+    max-height: 100%;
+    margin-inline: auto;
+  }
+}
+
 body.embedded-game .status-green { color: var(--green); }
 body.embedded-game .status-cyan,
 body.embedded-game .prompt { color: var(--cyan); }
