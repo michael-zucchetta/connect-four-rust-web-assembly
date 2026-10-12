@@ -49,12 +49,21 @@
       }
 
       window.onload = () => {
+        const startButton = document.getElementById('submit');
+        startButton.disabled = true;
         setupDifficultyLabels();
         initializeColumnHeights( document.getElementsByName('numberOfColumns')[0].value );
-        Rust.connect_four.then( ( connect_four) => {
+        Rust.connect_four.then(connect_four => {
           window.connect_four = connect_four;
+          startButton.disabled = false;
+        }).catch(error => {
+          console.error('Could not load Connect Four WebAssembly:', error);
+          document.getElementById('submit').value = 'Game failed to load';
         });
         window.initializeGame = () => {
+          if (startButton.disabled || !window.connect_four) {
+            return false;
+          }
           let numberOfColumns = document.getElementsByName('numberOfColumns')[0].value;
           let difficulty  = document.getElementsByName('difficulty')[0].value;
           let columnLengths = Array.from( document.getElementsByName('column-length') ).map( (columnInputLength) => parseInt( columnInputLength.value) );
@@ -99,7 +108,7 @@
         </div>
       </div>
       <div>
-        Start game: <input id="submit" type="button" onclick="initializeGame()" value="Ok"/>
+        Start game: <input id="submit" type="button" onclick="initializeGame()" value="Ok" disabled/>
       </div>
       </form>
     </div>
